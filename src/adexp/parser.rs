@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use crate::adexp::message::{AdexpMessage, Section};
 use crate::adexp::types::MessageType;
 use crate::adexp::error::AdexpError;
+use crate::adexp::fields::AdexpFields;
 
 #[derive(Parser)]
 #[grammar = "adexp/adexp.pest"]
@@ -118,6 +119,15 @@ impl AdexpParser {
                         if field_name_end > field_name_start {
                             let field_name: String = chars[field_name_start..field_name_end].iter().collect();
                             
+                            // Valider le nom du champ selon ADEXP 3.4
+                            // Note: TITLE est toujours accepté même s'il n'est pas dans la liste standard
+                            if field_name != "TITLE" && !AdexpFields::is_valid_field(&field_name) {
+                                return Err(AdexpError::InvalidField(format!(
+                                    "Invalid field name '{}' in BEGIN {} block. Field is not defined in ADEXP 3.4 specification.",
+                                    field_name, section_name
+                                )));
+                            }
+                            
                             // Ignorer les espaces après le nom du champ
                             let mut value_start = field_name_end;
                             while value_start < chars.len() && 
@@ -195,6 +205,16 @@ impl AdexpParser {
                                         }
                                         Rule::field => {
                                             let (field_name, field_value) = Self::parse_field(section_item_pair)?;
+                                            
+                                            // Valider le nom du champ selon ADEXP 3.4
+                                            // Note: TITLE est toujours accepté même s'il n'est pas dans la liste standard
+                                            if field_name != "TITLE" && !AdexpFields::is_valid_field(&field_name) {
+                                                return Err(AdexpError::InvalidField(format!(
+                                                    "Invalid field name '{}'. Field is not defined in ADEXP 3.4 specification.",
+                                                    field_name
+                                                )));
+                                            }
+                                            
                                             current_section.add_field(field_name, field_value);
                                         }
                                         _ => {}
@@ -334,6 +354,73 @@ mod tests {
         if let Some(values) = adep_values {
             assert!(values.len() >= 1);
         }
+    }
+
+    #[test]
+    fn test_parse_rejects_invalid_field_name() {
+        let input = "-ADEXP
+-TITLE FPL
+-ARCID ABC123
+-INVALID_FIELD_NAME VALUE
+";
+        let result = AdexpParser::parse_message(input);
+        assert!(result.is_err(), "Should reject invalid field name");
+        
+        if let Err(AdexpError::InvalidField(msg)) = result {
+            assert!(msg.contains("INVALID_FIELD_NAME"), "Error should mention invalid field");
+            assert!(msg.contains("ADEXP 3.4"), "Error should mention ADEXP 3.4 specification");
+        } else {
+            panic!("Expected InvalidField error, got: {:?}", result);
+        }
+    }
+
+    #[test]
+    fn test_parse_accepts_valid_field_names() {
+        let input = "-ADEXP
+-TITLE FPL
+-ARCID ABC123
+-ADEP LFPG
+-ADES LFPB
+-EOBT 1230
+-RFL 350
+";
+        let result = AdexpParser::parse_message(input);
+        assert!(result.is_ok(), "Should accept all valid field names");
+    }
+
+    #[test]
+    fn test_parse_begin_end_rejects_invalid_field() {
+        let input = "-ADEXP
+-TITLE FPL
+-ARCID ABC123
+-BEGIN RTEPTS
+-INVALID_FIELD VALUE
+-END RTEPTS
+";
+        let result = AdexpParser::parse_message(input);
+        assert!(result.is_err(), "Should reject invalid field in BEGIN/END block");
+        
+        if let Err(AdexpError::InvalidField(msg)) = result {
+            assert!(msg.contains("INVALID_FIELD"), "Error should mention invalid field");
+            assert!(msg.contains("BEGIN RTEPTS"), "Error should mention the block name");
+        } else {
+            panic!("Expected InvalidField error, got: {:?}", result);
+        }
+    }
+
+    #[test]
+    fn test_parse_begin_end_accepts_valid_fields() {
+        let input = "-ADEXP
+-TITLE FPL
+-ARCID ABC123
+-BEGIN RTEPTS
+-PT POINT1
+-FL 350
+-ETO 1230
+-END RTEPTS
+";
+        let result = AdexpParser::parse_message(input);
+        assert!(result.is_ok(), "Should accept valid fields in BEGIN/END block");
     }
 }
 

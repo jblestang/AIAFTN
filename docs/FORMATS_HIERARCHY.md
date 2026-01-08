@@ -71,7 +71,7 @@ Ces deux formats sont complémentaires et peuvent représenter les mêmes types 
     │                                                       │
     └─ Operational (Messages Opérationnels)                 │
        ├─ OperationalMessage                                │
-       └─ GenericMessage                                    │
+       └─ GenericMessage                                    │                           
 ```
 
 ## Format AFTN 3.4

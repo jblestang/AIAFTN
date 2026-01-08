@@ -207,6 +207,8 @@ impl AdexpFields {
             "PBN" | "FLTRUL" | "FLTTYP" | "NAV" | "COM" | "DAT" | "SUR" |
             // Coordination et identification
             "IFPLID" | "ORIGIN" | "NETWORKTYPE" | "FAC" | "TITLE" | "SRC" |
+            // Codes SSR/Mode S
+            "COD" |
             // Statut
             "CDMSTATUS" | "IFPSDISCREPANCY" | "CSTAT" |
             // Référence
