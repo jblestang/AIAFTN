@@ -38,7 +38,7 @@ Ces deux formats sont complémentaires et peuvent représenter les mêmes types 
     └───────────┬───────────┘   └───────────────────────┘
                 │
     ┌───────────┴───────────────────────────────────────────┐
-    │                                                         │
+    │                                                       │
     ├─ Meteorological (Messages Météorologiques)            │
     │  ├─ NotamMessage (NOTAM)                              │
     │  ├─ MetarMessage (METAR)                              │
@@ -46,8 +46,8 @@ Ces deux formats sont complémentaires et peuvent représenter les mêmes types 
     │  ├─ SigmetMessage (SIGMET)                            │
     │  ├─ AirmetMessage (AIRMET)                            │
     │  ├─ AtisMessage (ATIS)                                │
-    │  └─ VolmetMessage (VOLMET)                             │
-    │                                                         │
+    │  └─ VolmetMessage (VOLMET)                            │
+    │                                                       │
     ├─ Flight Plan (Messages de Plan de Vol)                │
     │  ├─ FplMessage (FPL)                                  │
     │  ├─ ChgMessage (CHG)                                  │
@@ -57,18 +57,18 @@ Ces deux formats sont complémentaires et peuvent représenter les mêmes types 
     │  ├─ ArrMessage (ARR)                                  │
     │  ├─ EstMessage (EST)                                  │
     │  └─ SplMessage (SPL)                                  │
-    │                                                         │
-    ├─ Coordination (Messages de Coordination)               │
+    │                                                       │
+    ├─ Coordination (Messages de Coordination)              │
     │  ├─ CofMessage (COF/CDN)                              │
     │  ├─ ReqMessage (REQ)                                  │
     │  └─ AbiMessage (ABI)                                  │
-    │                                                         │
+    │                                                       │
     ├─ Position (Messages de Position)                      │
     │  └─ PosMessage (POS)                                  │
-    │                                                         │
+    │                                                       │
     ├─ Alerting (Messages d'Alerte)                         │
     │  └─ AlrMessage (ALR)                                  │
-    │                                                         │
+    │                                                       │
     └─ Operational (Messages Opérationnels)                 │
        ├─ OperationalMessage                                │
        └─ GenericMessage                                    │
