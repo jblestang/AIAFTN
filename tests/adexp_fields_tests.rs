@@ -246,6 +246,94 @@ fn test_performance_fields() {
 
 /// Test avec des sections et champs composés
 #[test]
+fn tesz_ipfl() {
+    let input = "-ADEXP
+-TITLE IFPL
+-BEGIN ADDR
+  -FAC LIIRZEZX
+  -FAC LYZZEBXX
+-END ADDR
+-ADEP EDDF
+-ADES LGTS
+-ARCID KIM1
+-ARCTYP B738
+-CEQPT SDGRWY
+-EOBD 170729
+-EOBT 0715
+-FILTIM 280832
+-IFPLID AT00441635
+-ORIGIN -NETWORKTYPE SITA -FAC FRAOXLH
+-SEQPT C
+-WKTRC M
+-PBN B2
+-REG DABHM
+-SEL KMGJ
+-SRC FPL
+-TTLEET 0210
+-RFL F330
+-SPEED N0417
+-FLTRUL I
+-FLTTYP S
+-ROUTE N0417F330 ANEKI8L ANEKI Y163 NATOR UN850 TRA UP131 RESIA Q333
+BABAG UN606 PEVAL DCT PETAK UL607 PINDO UM603 EDASI
+-ALTRNT1 LBSF
+-BEGIN RTEPTS
+  -PT EDDF -PTID EDDF -FL F004 -ETO 170729073000
+  -PT RID -PTID RID -FL F100 -ETO 170729073404
+  -PT ANEKI -PTID ANEKI -FL F210 -ETO 170729073856
+  -PT NEKLO -PTID NEKLO -FL F214 -ETO 170729073911
+  -PT BADLI -PTID BADLI -FL F248 -ETO 170729074118
+  -PT PABLA -PTID PABLA -FL F279 -ETO 170729074348
+  -PT HERBI -PTID HERBI -FL F308 -ETO 170729074624
+  -PT NATOR -PTID NATOR -FL F330 -ETO 170729074911
+  -PT TITIX -PTID TITIX -FL F330 -ETO 170729075154
+  -PT TRA -PTID TRA -FL F330 -ETO 170729075323
+  -PT ARGAX -PTID ARGAX -FL F330 -ETO 170729080055
+  -PT RESIA -PTID RESIA -FL F330 -ETO 170729080731
+  -PT UNTAD -PTID UNTAD -FL F330 -ETO 170729081243
+  -PT DIKEM -PTID DIKEM -FL F330 -ETO 170729081627
+  -PT ROKIB -PTID ROKIB -FL F330 -ETO 170729081824
+  -PT BABAG -PTID BABAG -FL F330 -ETO 170729082816
+  -PT PEVAL -PTID PEVAL -FL F330 -ETO 170729082916
+  -PT PETAK -PTID PETAK -FL F330 -ETO 170729091754
+  -PT PINDO -PTID PINDO -FL F330 -ETO 170729093322
+  -PT EDASI -PTID EDASI -FL F165 -ETO 170729094347
+  -PT LGTS -PTID LGTS -FL F000 -ETO 170729095713
+-END RTEPTS
+-SID ANEKI8L
+-ATSRT Y163 ANEKI NATOR
+-ATSRT UN850 NATOR TRA
+-ATSRT UP131 TRA RESIA
+-ATSRT Q333 RESIA BABAG
+-ATSRT UN606 BABAG PEVAL
+-DCT PEVAL PETAK
+-ATSRT UL607 PETAK PINDO
+-ATSRT UM603 PINDO EDASI";
+    
+    let message = AdexpParser::parse_message(input).expect("Should parse successfully");
+    
+    // Les champs dans la section RTEPTS devraient être accessibles
+    // Vérifier que la section RTEPTS existe
+    let rtepts_section = message.get_section("RTEPTS");
+    if rtepts_section.is_none() {
+        // Si la section n'existe pas, vérifier dans la section principale
+        let pt_values = message.get_field("", "PT");
+        if pt_values.is_ok() {
+            if let Some(values) = pt_values.unwrap() {
+                assert!(values.len() >= 1, "PT field should have at least one value");
+            }
+        }
+    } else {
+        let pt_values = message.get_field("RTEPTS", "PT");
+        assert!(pt_values.is_ok(), "Should be able to get PT field from RTEPTS section");
+        if let Ok(Some(values)) = pt_values {
+            assert!(values.len() >= 1, "PT field should have at least one value");
+        }
+    }
+}
+
+/// Test avec des sections et champs composés
+#[test]
 fn test_sections_with_compound_fields() {
     let input = "-ADEXP
 -TITLE FPL

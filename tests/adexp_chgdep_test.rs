@@ -2,7 +2,7 @@
 //! CHGDEP est un titre de message réservé par la France selon ADEXP 3.4
 
 use aftn::AdexpParser;
-use aftn::AdexpMessageType;
+use aftn::adexp::types::MessageType;
 
 #[test]
 fn test_parse_chgdep_message() {
@@ -15,8 +15,8 @@ fn test_parse_chgdep_message() {
     
     let message = AdexpParser::parse_message(input).expect("Should parse successfully");
     
-    // Vérifier que le type de message est ChangedDeparture
-    assert_eq!(message.message_type, AdexpMessageType::ChangedDeparture);
+    // Vérifier que le type de message est Chgdep
+    assert_eq!(message.message_type, MessageType::Chgdep);
     
     // Vérifier que les champs sont parsés
     let arcid = message.get_field_value("", "ARCID").unwrap();
@@ -37,7 +37,7 @@ fn test_chgdep_with_departure_time() {
 ";
     
     let message = AdexpParser::parse_message(input).expect("Should parse successfully");
-    assert_eq!(message.message_type, AdexpMessageType::ChangedDeparture);
+    assert_eq!(message.message_type, MessageType::Chgdep);
     
     let actdep = message.get_field_value("", "ACTDEP").unwrap();
     assert_eq!(actdep, Some(&"121530".to_string()));
@@ -48,21 +48,17 @@ fn test_chgdep_with_departure_time() {
 
 #[test]
 fn test_chgdep_message_type_prefix() {
-    use aftn::adexp::types::MessageType;
-    
-    let msg_type = MessageType::ChangedDeparture;
+    let msg_type = MessageType::Chgdep;
     assert_eq!(msg_type.prefix(), "CHGDEP");
 }
 
 #[test]
 fn test_chgdep_from_title() {
-    use aftn::adexp::types::MessageType;
-    
     let msg_type = MessageType::from_title("CHGDEP").unwrap();
-    assert_eq!(msg_type, MessageType::ChangedDeparture);
+    assert_eq!(msg_type, MessageType::Chgdep);
     
     // Test case insensitive
     let msg_type_lower = MessageType::from_title("chgdep").unwrap();
-    assert_eq!(msg_type_lower, MessageType::ChangedDeparture);
+    assert_eq!(msg_type_lower, MessageType::Chgdep);
 }
 

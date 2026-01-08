@@ -10,19 +10,27 @@ start_marker = {
     "-ADEXP" ~ newline
 }
 
-// Marqueur de fin ADEXP (optionnel)
+// Marqueur de fin ADEXP (optionnel, doit être seul sur la ligne, sans nom de section)
 end_marker = {
-    "-END" ~ newline?
+    "-END" ~ !(space+ ~ section_name) ~ newline?
 }
 
-// Sections du message (champs et en-têtes de section mélangés)
+// Sections du message (champs, en-têtes de section, et tableaux mélangés)
 sections = {
-    (section_header | field)*
+    section_item*
+}
+
+// Un élément de section (peut être un en-tête ou un champ)
+// NOTE: Les blocs BEGIN/END sont parsés manuellement avant d'appeler PEST
+// pour éviter les problèmes de précédence dans PEST
+section_item = {
+    section_header | field
 }
 
 // En-tête de section (optionnel, format: -SECTION_NAME)
+// Ne doit pas commencer par "-BEGIN" (réservé pour array_block)
 section_header = {
-    "-" ~ section_name ~ newline
+    !("-" ~ "BEGIN" ~ space) ~ "-" ~ section_name ~ newline
 }
 
 // Nom de section (lettres et chiffres)
@@ -36,8 +44,10 @@ fields = {
 }
 
 // Un champ (format: -FIELD_NAME VALUE ou -FIELD_NAME)
+// Ne doit pas commencer par "-BEGIN" (qui est réservé pour array_block)
+// La lookahead négative vérifie explicitement que ce n'est pas "-BEGIN" suivi d'un espace
 field = {
-    "-" ~ field_name ~ (space+ ~ field_value)? ~ newline
+    !("-" ~ "BEGIN" ~ space) ~ "-" ~ field_name ~ (space+ ~ field_value)? ~ newline
 }
 
 // Nom de champ (lettres et chiffres)
