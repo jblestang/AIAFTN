@@ -109,7 +109,7 @@ fn test_chgdep_message() {
 -ARCID ABC123
 ";
     let msg = AdexpParser::parse_message(input).unwrap();
-    assert_eq!(msg.message_type, AdexpMessageType::ChangedDeparture);
+    assert_eq!(msg.message_type, AdexpMessageType::Chgdep);
 }
 
 #[test]
