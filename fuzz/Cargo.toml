@@ -1,0 +1,20 @@
+[package]
+name = "aftn-fuzz"
+version = "0.0.0"
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+aftn = { path = ".." }
+libfuzzer-sys = "0.4"
+
+[[bin]]
+name = "fuzz_parser"
+path = "fuzz_targets/fuzz_parser.rs"
+
+[[bin]]
+name = "fuzz_adexp_parser"
+path = "fuzz_targets/fuzz_adexp_parser.rs"
+
