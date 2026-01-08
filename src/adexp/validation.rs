@@ -38,6 +38,49 @@ pub fn validate_field(field_name: &str, value: &str) -> Result<(), AdexpError> {
         "REG" => validate_registration(value),
         "SEL" => validate_selcal(value),
         
+        // Flight Rules et Types
+        "FLTRUL" => validate_flight_rules(value),
+        "FLTTYP" => validate_flight_type(value),
+        
+        // Equipment codes
+        "PBN" => validate_pbn(value),
+        "NAV" => validate_nav_equipment(value),
+        "COM" => validate_com_equipment(value),
+        "DAT" => validate_dat_equipment(value),
+        "SUR" => validate_sur_equipment(value),
+        "CEQPT" => validate_ceqpt(value),
+        
+        // Aircraft Type
+        "ARCTYP" => validate_aircraft_type(value),
+        
+        // Météorologie
+        "WINDIR" => validate_wind_direction(value),
+        "WINDSPEED" => validate_wind_speed(value),
+        "QNH" | "QFE" => validate_pressure(value),
+        "AIRTEMP" => validate_temperature(value),
+        
+        // Temps et angles
+        "EET" => validate_time_hhmm(value),
+        "TRACKANGLE" => validate_track_angle(value),
+        
+        // Altitude et distance
+        "ALT" | "ALTNZ" => validate_altitude(value),
+        "DIST" | "RELDIST" => validate_distance(value),
+        
+        // Adresses et codes
+        "HEXADDR" => validate_hex_address(value),
+        "OPRICAO" | "PERICAO" => validate_icao_3letter_code(value),
+        "CODEICAO" => validate_code_icao(value),
+        
+        // Wake Turbulence
+        "WKTRC" => validate_wake_turbulence(value),
+        
+        // IFPS
+        "IFPLID" => validate_ifplid(value),
+        
+        // Procedures
+        "SID" | "STAR" | "ARRPROC" | "DEPPROC" => validate_procedure(value),
+        
         _ => Ok(()), // Pas de validation spécifique pour ce champ
     }
 }
@@ -548,6 +591,558 @@ pub fn validate_selcal(value: &str) -> Result<(), AdexpError> {
     Ok(())
 }
 
+/// Valide les règles de vol (Flight Rules)
+/// Valeurs valides: I (IFR), V (VFR), Y (YFR), Z (ZFR)
+pub fn validate_flight_rules(value: &str) -> Result<(), AdexpError> {
+    match value {
+        "I" | "V" | "Y" | "Z" => Ok(()),
+        _ => Err(AdexpError::InvalidFieldValue(format!(
+            "Flight Rules doit être I, V, Y ou Z, reçu: {}",
+            value
+        ))),
+    }
+}
+
+/// Valide le type de vol (Flight Type)
+/// Valeurs valides: S (Scheduled), N (Non-scheduled), G (General Aviation), M (Military), X (Other)
+pub fn validate_flight_type(value: &str) -> Result<(), AdexpError> {
+    match value {
+        "S" | "N" | "G" | "M" | "X" => Ok(()),
+        _ => Err(AdexpError::InvalidFieldValue(format!(
+            "Flight Type doit être S, N, G, M ou X, reçu: {}",
+            value
+        ))),
+    }
+}
+
+/// Valide PBN (Performance Based Navigation)
+/// Format: codes séparés par virgule (ex: A1, B1, C1, D1, L1, O1, S1, T1)
+pub fn validate_pbn(value: &str) -> Result<(), AdexpError> {
+    if value.is_empty() {
+        return Err(AdexpError::InvalidFieldValue(
+            "PBN ne peut pas être vide".to_string()
+        ));
+    }
+    
+    // Format: codes séparés par virgule ou espace
+    let codes: Vec<&str> = value.split([',', ' ']).filter(|s| !s.is_empty()).collect();
+    
+    if codes.is_empty() {
+        return Err(AdexpError::InvalidFieldValue(
+            "PBN doit contenir au moins un code".to_string()
+        ));
+    }
+    
+    // Codes PBN valides selon ICAO: A1, B1, B2, B3, B4, B5, B6, C1, C2, C3, C4, D1, D2, D3, D4, L1, O1, O2, O3, O4, S1, S2, T1, T2
+    let valid_codes = ["A1", "B1", "B2", "B3", "B4", "B5", "B6", "C1", "C2", "C3", "C4", 
+                       "D1", "D2", "D3", "D4", "L1", "O1", "O2", "O3", "O4", "S1", "S2", "T1", "T2"];
+    
+    for code in codes {
+        if !valid_codes.contains(&code) {
+            return Err(AdexpError::InvalidFieldValue(format!(
+                "Code PBN invalide: {} (codes valides: A1, B1-B6, C1-C4, D1-D4, L1, O1-O4, S1-S2, T1-T2)",
+                code
+            )));
+        }
+    }
+    
+    Ok(())
+}
+
+/// Valide l'équipement de navigation (NAV)
+/// Format: codes séparés par virgule (ex: A, B, C, D, E1, E2, E3, F, G1, G2, H, I, J1, J2, J3, J4, J5, J6, J7, K, L, M1, M2, M3, O1, O2, O3, O4, P1, P2, P3, P4, P5, P6, P7, P8, P9, R, T, U, V, W, X, Y, Z)
+pub fn validate_nav_equipment(value: &str) -> Result<(), AdexpError> {
+    if value.is_empty() {
+        return Ok(()); // NAV peut être vide
+    }
+    
+    // Codes NAV valides selon ICAO
+    let valid_codes = ["A", "B", "C", "D", "E1", "E2", "E3", "F", "G1", "G2", "H", "I", 
+                       "J1", "J2", "J3", "J4", "J5", "J6", "J7", "K", "L", "M1", "M2", "M3",
+                       "O1", "O2", "O3", "O4", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9",
+                       "R", "T", "U", "V", "W", "X", "Y", "Z"];
+    
+    let codes: Vec<&str> = value.split([',', ' ']).filter(|s| !s.is_empty()).collect();
+    
+    for code in codes {
+        if !valid_codes.contains(&code) {
+            return Err(AdexpError::InvalidFieldValue(format!(
+                "Code NAV invalide: {}",
+                code
+            )));
+        }
+    }
+    
+    Ok(())
+}
+
+/// Valide l'équipement de communication (COM)
+/// Format: codes séparés par virgule
+pub fn validate_com_equipment(value: &str) -> Result<(), AdexpError> {
+    if value.is_empty() {
+        return Ok(()); // COM peut être vide
+    }
+    
+    // Codes COM valides selon ICAO
+    let valid_codes = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+    
+    let codes: Vec<&str> = value.split([',', ' ']).filter(|s| !s.is_empty()).collect();
+    
+    for code in codes {
+        if !valid_codes.contains(&code) {
+            return Err(AdexpError::InvalidFieldValue(format!(
+                "Code COM invalide: {}",
+                code
+            )));
+        }
+    }
+    
+    Ok(())
+}
+
+/// Valide l'équipement de liaison de données (DAT)
+/// Format: codes séparés par virgule
+pub fn validate_dat_equipment(value: &str) -> Result<(), AdexpError> {
+    if value.is_empty() {
+        return Ok(()); // DAT peut être vide
+    }
+    
+    // Codes DAT valides selon ICAO
+    let valid_codes = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+    
+    let codes: Vec<&str> = value.split([',', ' ']).filter(|s| !s.is_empty()).collect();
+    
+    for code in codes {
+        if !valid_codes.contains(&code) {
+            return Err(AdexpError::InvalidFieldValue(format!(
+                "Code DAT invalide: {}",
+                code
+            )));
+        }
+    }
+    
+    Ok(())
+}
+
+/// Valide l'équipement de surveillance (SUR)
+/// Format: codes séparés par virgule
+pub fn validate_sur_equipment(value: &str) -> Result<(), AdexpError> {
+    if value.is_empty() {
+        return Ok(()); // SUR peut être vide
+    }
+    
+    // Codes SUR valides selon ICAO
+    let valid_codes = ["A", "B1", "B2", "C", "D1", "D2", "E1", "E2", "E3", "E4", "E5", 
+                       "F", "G", "H", "I", "J1", "J2", "J3", "J4", "J5", "J6", "J7", 
+                       "K", "L", "M1", "M2", "M3", "N", "P1", "P2", "P3", "P4", "P5", 
+                       "P6", "P7", "P8", "P9", "Q", "R", "S", "T", "U1", "U2", "U3", 
+                       "U4", "V1", "V2", "W", "X", "Y", "Z"];
+    
+    let codes: Vec<&str> = value.split([',', ' ']).filter(|s| !s.is_empty()).collect();
+    
+    for code in codes {
+        if !valid_codes.contains(&code) {
+            return Err(AdexpError::InvalidFieldValue(format!(
+                "Code SUR invalide: {}",
+                code
+            )));
+        }
+    }
+    
+    Ok(())
+}
+
+/// Valide CEQPT (Communication Equipment)
+/// Format: codes séparés par virgule (similaire à COM)
+pub fn validate_ceqpt(value: &str) -> Result<(), AdexpError> {
+    validate_com_equipment(value)
+}
+
+/// Valide le type d'aéronef (ARCTYP)
+/// Format: code ICAO (2-4 caractères alphanumériques)
+pub fn validate_aircraft_type(value: &str) -> Result<(), AdexpError> {
+    if value.is_empty() {
+        return Err(AdexpError::InvalidFieldValue(
+            "Type d'aéronef ne peut pas être vide".to_string()
+        ));
+    }
+    
+    if value.len() < 2 || value.len() > 4 {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Type d'aéronef doit avoir 2-4 caractères (code ICAO), reçu: {} ({} caractères)",
+            value, value.len()
+        )));
+    }
+    
+    if !value.chars().all(|c| c.is_ascii_alphanumeric()) {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Type d'aéronef doit contenir uniquement des caractères alphanumériques, reçu: {}",
+            value
+        )));
+    }
+    
+    Ok(())
+}
+
+/// Valide la direction du vent (WINDIR)
+/// Format: 000-360 (3 chiffres)
+pub fn validate_wind_direction(value: &str) -> Result<(), AdexpError> {
+    if value.len() != 3 {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Direction du vent doit avoir 3 chiffres (000-360), reçu: {}",
+            value
+        )));
+    }
+    
+    if !value.chars().all(|c| c.is_ascii_digit()) {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Direction du vent doit contenir uniquement des chiffres, reçu: {}",
+            value
+        )));
+    }
+    
+    let dir: u32 = value.parse().map_err(|_| {
+        AdexpError::InvalidFieldValue(format!("Direction du vent invalide: {}", value))
+    })?;
+    
+    if dir > 360 {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Direction du vent doit être entre 000 et 360, reçu: {}",
+            value
+        )));
+    }
+    
+    Ok(())
+}
+
+/// Valide la vitesse du vent (WINDSPEED)
+/// Format: nombre (nœuds)
+pub fn validate_wind_speed(value: &str) -> Result<(), AdexpError> {
+    if value.is_empty() {
+        return Err(AdexpError::InvalidFieldValue(
+            "Vitesse du vent ne peut pas être vide".to_string()
+        ));
+    }
+    
+    if !value.chars().all(|c| c.is_ascii_digit()) {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Vitesse du vent doit contenir uniquement des chiffres, reçu: {}",
+            value
+        )));
+    }
+    
+    let speed: u32 = value.parse().map_err(|_| {
+        AdexpError::InvalidFieldValue(format!("Vitesse du vent invalide: {}", value))
+    })?;
+    
+    if speed > 999 {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Vitesse du vent doit être raisonnable (< 1000 nœuds), reçu: {}",
+            value
+        )));
+    }
+    
+    Ok(())
+}
+
+/// Valide la pression (QNH, QFE)
+/// Format: nombre (hPa, généralement 3-4 chiffres)
+pub fn validate_pressure(value: &str) -> Result<(), AdexpError> {
+    if value.is_empty() {
+        return Err(AdexpError::InvalidFieldValue(
+            "Pression ne peut pas être vide".to_string()
+        ));
+    }
+    
+    if !value.chars().all(|c| c.is_ascii_digit()) {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Pression doit contenir uniquement des chiffres, reçu: {}",
+            value
+        )));
+    }
+    
+    let pressure: u32 = value.parse().map_err(|_| {
+        AdexpError::InvalidFieldValue(format!("Pression invalide: {}", value))
+    })?;
+    
+    // Plage raisonnable pour la pression: 800-1100 hPa
+    if pressure < 800 || pressure > 1100 {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Pression doit être entre 800 et 1100 hPa, reçu: {}",
+            value
+        )));
+    }
+    
+    Ok(())
+}
+
+/// Valide la température de l'air (AIRTEMP)
+/// Format: nombre avec signe optionnel (degrés Celsius)
+pub fn validate_temperature(value: &str) -> Result<(), AdexpError> {
+    if value.is_empty() {
+        return Err(AdexpError::InvalidFieldValue(
+            "Température ne peut pas être vide".to_string()
+        ));
+    }
+    
+    let numeric_value = value.trim_start_matches(['+', '-']);
+    
+    if numeric_value.is_empty() {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Température invalide: {}",
+            value
+        )));
+    }
+    
+    if !numeric_value.chars().all(|c| c.is_ascii_digit()) {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Température doit contenir uniquement des chiffres et un signe optionnel, reçu: {}",
+            value
+        )));
+    }
+    
+    if let Ok(temp) = value.parse::<i32>() {
+        // Plage raisonnable: -80 à +60 degrés Celsius
+        if temp < -80 || temp > 60 {
+            return Err(AdexpError::InvalidFieldValue(format!(
+                "Température doit être entre -80 et +60°C, reçu: {}",
+                value
+            )));
+        }
+    }
+    
+    Ok(())
+}
+
+/// Valide l'angle de route (TRACKANGLE)
+/// Format: 001-360 (3 chiffres)
+pub fn validate_track_angle(value: &str) -> Result<(), AdexpError> {
+    if value.len() != 3 {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Angle de route doit avoir 3 chiffres (001-360), reçu: {}",
+            value
+        )));
+    }
+    
+    if !value.chars().all(|c| c.is_ascii_digit()) {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Angle de route doit contenir uniquement des chiffres, reçu: {}",
+            value
+        )));
+    }
+    
+    let angle: u32 = value.parse().map_err(|_| {
+        AdexpError::InvalidFieldValue(format!("Angle de route invalide: {}", value))
+    })?;
+    
+    if angle < 1 || angle > 360 {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Angle de route doit être entre 001 et 360, reçu: {}",
+            value
+        )));
+    }
+    
+    Ok(())
+}
+
+/// Valide une altitude (ALT, ALTNZ)
+/// Format: nombre (pieds) ou format FL
+pub fn validate_altitude(value: &str) -> Result<(), AdexpError> {
+    if value.is_empty() {
+        return Err(AdexpError::InvalidFieldValue(
+            "Altitude ne peut pas être vide".to_string()
+        ));
+    }
+    
+    // Format FL
+    if value.starts_with("FL") {
+        return validate_flight_level(value);
+    }
+    
+    // Format numérique (pieds)
+    if value.chars().all(|c| c.is_ascii_digit()) {
+        let alt: u32 = value.parse().map_err(|_| {
+            AdexpError::InvalidFieldValue(format!("Altitude invalide: {}", value))
+        })?;
+        
+        // Plage raisonnable: 0-100000 pieds
+        if alt > 100000 {
+            return Err(AdexpError::InvalidFieldValue(format!(
+                "Altitude doit être raisonnable (< 100000 pieds), reçu: {}",
+                value
+            )));
+        }
+        
+        return Ok(());
+    }
+    
+    Err(AdexpError::InvalidFieldValue(format!(
+        "Format d'altitude invalide: {}",
+        value
+    )))
+}
+
+/// Valide une distance (DIST, RELDIST)
+/// Format: nombre (unités variables)
+pub fn validate_distance(value: &str) -> Result<(), AdexpError> {
+    if value.is_empty() {
+        return Err(AdexpError::InvalidFieldValue(
+            "Distance ne peut pas être vide".to_string()
+        ));
+    }
+    
+    // Format numérique simple
+    if value.chars().all(|c| c.is_ascii_digit() || c == '.') {
+        if let Ok(dist) = value.parse::<f64>() {
+            if dist < 0.0 || dist > 99999.0 {
+                return Err(AdexpError::InvalidFieldValue(format!(
+                    "Distance doit être raisonnable (0-99999), reçu: {}",
+                    value
+                )));
+            }
+            return Ok(());
+        }
+    }
+    
+    Err(AdexpError::InvalidFieldValue(format!(
+        "Format de distance invalide: {}",
+        value
+    )))
+}
+
+/// Valide une adresse hexadécimale Mode S (HEXADDR)
+/// Format: 6 caractères hexadécimaux
+pub fn validate_hex_address(value: &str) -> Result<(), AdexpError> {
+    if value.len() != 6 {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Adresse hexadécimale doit avoir 6 caractères, reçu: {} ({} caractères)",
+            value, value.len()
+        )));
+    }
+    
+    if !value.chars().all(|c| c.is_ascii_hexdigit()) {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Adresse hexadécimale doit contenir uniquement des caractères hexadécimaux, reçu: {}",
+            value
+        )));
+    }
+    
+    Ok(())
+}
+
+/// Valide un code ICAO à 3 lettres (OPRICAO, PERICAO)
+/// Format: 3 lettres majuscules
+pub fn validate_icao_3letter_code(value: &str) -> Result<(), AdexpError> {
+    if value.len() != 3 {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Code ICAO doit avoir 3 lettres, reçu: {} ({} caractères)",
+            value, value.len()
+        )));
+    }
+    
+    if !value.chars().all(|c| c.is_ascii_alphabetic() && c.is_uppercase()) {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Code ICAO doit contenir uniquement des lettres majuscules, reçu: {}",
+            value
+        )));
+    }
+    
+    Ok(())
+}
+
+/// Valide un code ICAO (CODEICAO)
+/// Format: variable selon le type de code
+pub fn validate_code_icao(value: &str) -> Result<(), AdexpError> {
+    if value.is_empty() {
+        return Err(AdexpError::InvalidFieldValue(
+            "Code ICAO ne peut pas être vide".to_string()
+        ));
+    }
+    
+    // Format général: lettres et chiffres, 2-8 caractères
+    if value.len() < 2 || value.len() > 8 {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Code ICAO doit avoir 2-8 caractères, reçu: {} ({} caractères)",
+            value, value.len()
+        )));
+    }
+    
+    if !value.chars().all(|c| c.is_ascii_alphanumeric()) {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Code ICAO doit contenir uniquement des caractères alphanumériques, reçu: {}",
+            value
+        )));
+    }
+    
+    Ok(())
+}
+
+/// Valide la catégorie de turbulence de sillage (WKTRC)
+/// Valeurs valides: L (Light), M (Medium), H (Heavy), J (Super)
+pub fn validate_wake_turbulence(value: &str) -> Result<(), AdexpError> {
+    match value {
+        "L" | "M" | "H" | "J" => Ok(()),
+        _ => Err(AdexpError::InvalidFieldValue(format!(
+            "Wake Turbulence Category doit être L, M, H ou J, reçu: {}",
+            value
+        ))),
+    }
+}
+
+/// Valide un IFPS Flight Plan ID (IFPLID)
+/// Format: variable, généralement alphanumérique
+pub fn validate_ifplid(value: &str) -> Result<(), AdexpError> {
+    if value.is_empty() {
+        return Err(AdexpError::InvalidFieldValue(
+            "IFPLID ne peut pas être vide".to_string()
+        ));
+    }
+    
+    if value.len() > 20 {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "IFPLID ne peut pas dépasser 20 caractères, reçu: {} ({} caractères)",
+            value, value.len()
+        )));
+    }
+    
+    // Format général: alphanumérique avec tirets et underscores possibles
+    if !value.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_') {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "IFPLID doit contenir uniquement des caractères alphanumériques, tirets et underscores, reçu: {}",
+            value
+        )));
+    }
+    
+    Ok(())
+}
+
+/// Valide une procédure (SID, STAR, ARRPROC, DEPPROC)
+/// Format: variable, généralement alphanumérique avec tirets
+pub fn validate_procedure(value: &str) -> Result<(), AdexpError> {
+    if value.is_empty() {
+        return Err(AdexpError::InvalidFieldValue(
+            "Procédure ne peut pas être vide".to_string()
+        ));
+    }
+    
+    if value.len() > 20 {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Procédure ne peut pas dépasser 20 caractères, reçu: {} ({} caractères)",
+            value, value.len()
+        )));
+    }
+    
+    // Format général: alphanumérique avec tirets, underscores et points
+    if !value.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_' || c == '.') {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Procédure doit contenir uniquement des caractères alphanumériques, tirets, underscores et points, reçu: {}",
+            value
+        )));
+    }
+    
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -681,6 +1276,133 @@ mod tests {
         assert!(validate_selcal("ABCDE").is_err()); // Trop long
         assert!(validate_selcal("ABCI").is_err()); // I interdit
         assert!(validate_selcal("ABCN").is_err()); // N interdit
+    }
+
+    #[test]
+    fn test_validate_flight_rules() {
+        assert!(validate_flight_rules("I").is_ok());
+        assert!(validate_flight_rules("V").is_ok());
+        assert!(validate_flight_rules("Y").is_ok());
+        assert!(validate_flight_rules("Z").is_ok());
+        assert!(validate_flight_rules("X").is_err()); // Invalide
+        assert!(validate_flight_rules("IFR").is_err()); // Format incorrect
+    }
+
+    #[test]
+    fn test_validate_flight_type() {
+        assert!(validate_flight_type("S").is_ok());
+        assert!(validate_flight_type("N").is_ok());
+        assert!(validate_flight_type("G").is_ok());
+        assert!(validate_flight_type("M").is_ok());
+        assert!(validate_flight_type("X").is_ok());
+        assert!(validate_flight_type("A").is_err()); // Invalide
+    }
+
+    #[test]
+    fn test_validate_pbn() {
+        assert!(validate_pbn("A1").is_ok());
+        assert!(validate_pbn("A1,B1,C1").is_ok());
+        assert!(validate_pbn("B1 B2").is_ok());
+        assert!(validate_pbn("X1").is_err()); // Code invalide
+        assert!(validate_pbn("").is_err()); // Vide
+    }
+
+    #[test]
+    fn test_validate_wind_direction() {
+        assert!(validate_wind_direction("000").is_ok());
+        assert!(validate_wind_direction("360").is_ok());
+        assert!(validate_wind_direction("180").is_ok());
+        assert!(validate_wind_direction("361").is_err()); // Trop élevé
+        assert!(validate_wind_direction("12").is_err()); // Trop court
+    }
+
+    #[test]
+    fn test_validate_wind_speed() {
+        assert!(validate_wind_speed("0").is_ok());
+        assert!(validate_wind_speed("50").is_ok());
+        assert!(validate_wind_speed("999").is_ok());
+        assert!(validate_wind_speed("1000").is_err()); // Trop élevé
+        assert!(validate_wind_speed("ABC").is_err()); // Non numérique
+    }
+
+    #[test]
+    fn test_validate_pressure() {
+        assert!(validate_pressure("1013").is_ok());
+        assert!(validate_pressure("800").is_ok());
+        assert!(validate_pressure("1100").is_ok());
+        assert!(validate_pressure("799").is_err()); // Trop bas
+        assert!(validate_pressure("1101").is_err()); // Trop élevé
+    }
+
+    #[test]
+    fn test_validate_temperature() {
+        assert!(validate_temperature("20").is_ok());
+        assert!(validate_temperature("-40").is_ok());
+        assert!(validate_temperature("+15").is_ok());
+        assert!(validate_temperature("-81").is_err()); // Trop bas
+        assert!(validate_temperature("61").is_err()); // Trop élevé
+    }
+
+    #[test]
+    fn test_validate_track_angle() {
+        assert!(validate_track_angle("001").is_ok());
+        assert!(validate_track_angle("360").is_ok());
+        assert!(validate_track_angle("180").is_ok());
+        assert!(validate_track_angle("000").is_err()); // Trop bas
+        assert!(validate_track_angle("361").is_err()); // Trop élevé
+    }
+
+    #[test]
+    fn test_validate_altitude() {
+        assert!(validate_altitude("FL350").is_ok());
+        assert!(validate_altitude("35000").is_ok());
+        assert!(validate_altitude("0").is_ok());
+        assert!(validate_altitude("100001").is_err()); // Trop élevé
+    }
+
+    #[test]
+    fn test_validate_hex_address() {
+        assert!(validate_hex_address("ABCDEF").is_ok());
+        assert!(validate_hex_address("123456").is_ok());
+        assert!(validate_hex_address("abc123").is_ok());
+        assert!(validate_hex_address("ABCDE").is_err()); // Trop court
+        assert!(validate_hex_address("ABCDEFG").is_err()); // Trop long
+        assert!(validate_hex_address("ABCDEG").is_err()); // Caractère invalide
+    }
+
+    #[test]
+    fn test_validate_icao_3letter_code() {
+        assert!(validate_icao_3letter_code("AFR").is_ok());
+        assert!(validate_icao_3letter_code("UAE").is_ok());
+        assert!(validate_icao_3letter_code("AF").is_err()); // Trop court
+        assert!(validate_icao_3letter_code("AFRA").is_err()); // Trop long
+        assert!(validate_icao_3letter_code("afr").is_err()); // Minuscules
+    }
+
+    #[test]
+    fn test_validate_wake_turbulence() {
+        assert!(validate_wake_turbulence("L").is_ok());
+        assert!(validate_wake_turbulence("M").is_ok());
+        assert!(validate_wake_turbulence("H").is_ok());
+        assert!(validate_wake_turbulence("J").is_ok());
+        assert!(validate_wake_turbulence("S").is_err()); // Invalide
+    }
+
+    #[test]
+    fn test_validate_ifplid() {
+        assert!(validate_ifplid("ABC123").is_ok());
+        assert!(validate_ifplid("IFPL-2024-001").is_ok());
+        assert!(validate_ifplid("").is_err()); // Vide
+        assert!(validate_ifplid("A".repeat(21).as_str()).is_err()); // Trop long
+    }
+
+    #[test]
+    fn test_validate_procedure() {
+        assert!(validate_procedure("RWY27L").is_ok());
+        assert!(validate_procedure("ILS-27L").is_ok());
+        assert!(validate_procedure("STAR.ABC").is_ok());
+        assert!(validate_procedure("").is_err()); // Vide
+        assert!(validate_procedure("A".repeat(21).as_str()).is_err()); // Trop long
     }
 }
 

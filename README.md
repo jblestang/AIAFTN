@@ -235,8 +235,27 @@ Le parser ADEXP inclut une validation sémantique complète des champs selon la 
 - **Codes SSR** : Format octal (4 chiffres 0-7) ou Mode S (6 hexadécimaux)
 - **Immatriculations** : Format variable selon pays
 - **Codes SELCAL** : 4 lettres (A-S sauf I, N, O, Q)
+- **Flight Rules** (FLTRUL) : I, V, Y, Z
+- **Flight Type** (FLTTYP) : S, N, G, M, X
+- **PBN** : Codes Performance Based Navigation (A1, B1-B6, C1-C4, D1-D4, L1, O1-O4, S1-S2, T1-T2)
+- **Equipment codes** : NAV, COM, DAT, SUR (codes ICAO)
+- **Aircraft Type** (ARCTYP) : Code ICAO (2-4 caractères)
+- **Wind Direction** (WINDIR) : 000-360
+- **Wind Speed** (WINDSPEED) : Format numérique
+- **Pressure** (QNH, QFE) : 800-1100 hPa
+- **Air Temperature** (AIRTEMP) : -80 à +60°C
+- **Track Angle** (TRACKANGLE) : 001-360
+- **Altitude** (ALT) : Format numérique ou FL
+- **Distance** (DIST) : Format numérique
+- **Hex Address** (HEXADDR) : 6 caractères hexadécimaux (Mode S)
+- **ICAO 3-letter codes** (OPRICAO, PERICAO) : 3 lettres majuscules
+- **Wake Turbulence** (WKTRC) : L, M, H, J
+- **IFPS Flight Plan ID** (IFPLID) : Format alphanumérique
+- **Procedures** (SID, STAR, ARRPROC, DEPPROC) : Format alphanumérique avec tirets/points
 
 La validation est automatiquement effectuée lors de l'appel à `message.validate()`.
+
+**Total : 65+ types de champs validés sémantiquement**
 
 ### Exemple de validation
 
