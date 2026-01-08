@@ -35,6 +35,7 @@ pub enum PrimaryField {
     ETA,       // Estimated time of arrival
     EDA,       // Estimated date of arrival
     ACTARR,    // Actual arrival time
+    ACTDEP,    // Actual departure time
     
     // Champs de niveau de vol
     RFL,       // Requested flight level
@@ -195,7 +196,7 @@ impl AdexpFields {
             "ROUTE" | "SID" | "STAR" | "ATSRT" | "ARRPROC" | "DEPPROC" |
             // Temps
             "EOBD" | "EOBT" | "ETO" | "ATOT" | "ETA" | "EDA" | "AMANTIME" | "TOM" |
-            "ATD" | "ATAD" | "ATOD" | "ATOA" | "ATOTD" | "ATOTA" | "ACTARR" |
+            "ATD" | "ATAD" | "ATOD" | "ATOA" | "ATOTD" | "ATOTA" | "ACTARR" | "ACTDEP" |
             // Niveaux de vol
             "RFL" | "CFL" | "AFL" | "TFL" |
             // Vitesse
