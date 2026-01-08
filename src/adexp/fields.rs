@@ -134,33 +134,59 @@ pub struct AdexpFields;
 
 impl AdexpFields {
     /// Vérifie si un nom de champ est un champ primaire valide
+    /// Selon la spécification ADEXP 3.4 d'EUROCONTROL
     pub fn is_primary_field(field_name: &str) -> bool {
         matches!(field_name, 
+            // Adresses et aérodromes
             "ADDR" | "ADEP" | "ADES" | "ALTRNT1" | "ALTRNT2" |
+            // Identification du vol
             "ARCID" | "ARCTYP" | "CEQPT" | "REG" | "SEL" |
-            "ROUTE" | "SID" | "STAR" | "ATSRT" |
-            "EOBD" | "EOBT" | "ETO" | "ATOT" | "ETA" | "EDA" |
+            // Route et navigation
+            "ROUTE" | "SID" | "STAR" | "ATSRT" | "ARRPROC" |
+            // Temps
+            "EOBD" | "EOBT" | "ETO" | "ATOT" | "ETA" | "EDA" | "AMANTIME" | "TOM" |
+            // Niveaux de vol
             "RFL" | "CFL" |
+            // Vitesse
             "SPEED" | "GROUNDSPEED" |
+            // Météorologie
             "WINDIR" | "WINDSPEED" | "AIRTEMP" |
+            // Performance et navigation
             "PBN" | "FLTRUL" | "FLTTYP" |
-            "IFPLID" | "ORIGIN" | "NETWORKTYPE" | "FAC" |
+            // Coordination et identification
+            "IFPLID" | "ORIGIN" | "NETWORKTYPE" | "FAC" | "TITLE" |
+            // Statut
             "CDMSTATUS" | "IFPSDISCREPANCY" |
+            // Référence
             "REFDATA" |
+            // Points de route
             "RTEPTS" | "PT" | "PTID" | "FL" |
+            // Champs additionnels
             "DEPAPTYPE" | "DEPARCTYP" | "OBTLIMIT" |
             "PRF1" | "PRF2" | "PRF3" | "PRF4" |
             "TRACKANGLE" | "TTO" | "TTLEET" | "FILTIM" |
-            "SEQPT" | "WKTRC" | "SRC" | "MFX" | "PTDLE" | "CMLTSP"
+            "SEQPT" | "WKTRC" | "SRC" | "MFX" | "PTDLE" | "CMLTSP" |
+            // Champs réservés et additionnels de la spécification 3.4
+            "RELDIST" | "HEXADDR"
         )
     }
     
     /// Vérifie si un nom de champ est un champ de base valide
+    /// Selon la spécification ADEXP 3.4 d'EUROCONTROL
     pub fn is_basic_field(field_name: &str) -> bool {
         matches!(field_name,
-            "NUM" | "PT" | "TIMEHHMM" | "TIMEHHMMSS" | "DATE" |
-            "GEONAME" | "LAT" | "LON" | "ALT" | "ALTNZ" | "DIST" |
-            "REASON" | "AHEAD" | "STATREASON"
+            // Identifiants
+            "NUM" | "PT" |
+            // Temps
+            "TIMEHHMM" | "TIMEHHMMSS" | "DATE" |
+            // Géographie
+            "GEONAME" | "LAT" | "LON" |
+            // Altitude et distance
+            "ALT" | "ALTNZ" | "DIST" | "RELDIST" |
+            // Autres
+            "REASON" | "AHEAD" | "STATREASON" |
+            // Champs additionnels
+            "SENDER" | "RECVR" | "CMLTSP"
         )
     }
     
