@@ -1,0 +1,8 @@
+station,valid,metar
+station,valid,metar
+station,valid,metar
+station,valid,metar
+station,valid,metar
+station,valid,metar
+station,valid,metar
+station,valid,metar
