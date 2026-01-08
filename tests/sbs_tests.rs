@@ -4,5 +4,6 @@ mod sbs {
     mod parser_tests;
     mod validation_tests;
     mod message_tests;
+    mod dysfunctional_tests;
 }
 

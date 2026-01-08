@@ -41,3 +41,6 @@ mod validation_extended_tests;
 #[path = "adexp/adexp_validation_tests.rs"]
 mod validation_tests;
 
+#[path = "adexp/adexp_dysfunctional_tests.rs"]
+mod dysfunctional_tests;
+

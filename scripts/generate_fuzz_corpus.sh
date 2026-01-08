@@ -80,6 +80,36 @@ echo "-ADEXP
 -ARCID ABC123
 " > "$CORPUS_DIR_ADEXP/empty_title.txt"
 
+# Corpus NMEA
+CORPUS_DIR_NMEA="fuzz/corpus/fuzz_nmea_parser"
+mkdir -p "$CORPUS_DIR_NMEA"
+
+# Messages NMEA valides
+echo '$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47' > "$CORPUS_DIR_NMEA/valid_gga.txt"
+echo '$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A' > "$CORPUS_DIR_NMEA/valid_rmc.txt"
+echo '!AIVDM,1,1,,A,13HOI:0P0000VOHLCnHQKwvL05Ip,0*XX' > "$CORPUS_DIR_NMEA/valid_ais.txt"
+
+# Messages NMEA invalides (pour tester la robustesse)
+echo 'GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47' > "$CORPUS_DIR_NMEA/invalid_start.txt"
+echo '$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,' > "$CORPUS_DIR_NMEA/missing_checksum.txt"
+echo '$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*00' > "$CORPUS_DIR_NMEA/invalid_checksum.txt"
+
+# Corpus SBS
+CORPUS_DIR_SBS="fuzz/corpus/fuzz_sbs_parser"
+mkdir -p "$CORPUS_DIR_SBS"
+
+# Messages SBS valides
+echo "MSG,1,145,29315,4CA2E6,27215,2015/02/05,14:53:22.734,2015/02/05,14:53:22.734,BAW1425,,,,,,,,,,,0" > "$CORPUS_DIR_SBS/valid_identification.txt"
+echo "MSG,3,145,29315,4CA2E6,27215,2015/02/05,14:53:22.734,2015/02/05,14:53:22.734,,37025,1035.0,295.6,51.4703,-0.4543,,,,,0" > "$CORPUS_DIR_SBS/valid_position.txt"
+echo "MSG,4,145,29315,4CA2E6,27215,2015/02/05,14:53:22.734,2015/02/05,14:53:22.734,,,1035.0,295.6,,,-3200,,,,,0" > "$CORPUS_DIR_SBS/valid_velocity.txt"
+
+# Messages SBS invalides (pour tester la robustesse)
+echo "INVALID,1,145,29315,4CA2E6,27215,2015/02/05,14:53:22.734,2015/02/05,14:53:22.734,BAW1425,,,,,,,,,,,0" > "$CORPUS_DIR_SBS/invalid_start.txt"
+echo "MSG,,145,29315,4CA2E6,27215,2015/02/05,14:53:22.734,2015/02/05,14:53:22.734,BAW1425,,,,,,,,,,,0" > "$CORPUS_DIR_SBS/missing_type.txt"
+echo "MSG,99,145,29315,4CA2E6,27215,2015/02/05,14:53:22.734,2015/02/05,14:53:22.734,BAW1425,,,,,,,,,,,0" > "$CORPUS_DIR_SBS/invalid_type.txt"
+
 echo "Corpus AFTN généré dans $CORPUS_DIR_AFTN"
 echo "Corpus ADEXP généré dans $CORPUS_DIR_ADEXP"
+echo "Corpus NMEA généré dans $CORPUS_DIR_NMEA"
+echo "Corpus SBS généré dans $CORPUS_DIR_SBS"
 

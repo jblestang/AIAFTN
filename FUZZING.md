@@ -24,7 +24,10 @@ sudo apt-get install afl++
 
 Le fuzzing est configuré dans le dossier `fuzz/` avec :
 - `fuzz/Cargo.toml` : Configuration du projet de fuzzing
-- `fuzz/fuzz_targets/fuzz_parser.rs` : Cible de fuzzing principale
+- `fuzz/fuzz_targets/fuzz_parser.rs` : Cible de fuzzing AFTN
+- `fuzz/fuzz_targets/fuzz_adexp_parser.rs` : Cible de fuzzing ADEXP
+- `fuzz/fuzz_targets/fuzz_nmea_parser.rs` : Cible de fuzzing NMEA
+- `fuzz/fuzz_targets/fuzz_sbs_parser.rs` : Cible de fuzzing SBS
 
 ## Utilisation
 
@@ -47,8 +50,21 @@ Cela crée un ensemble de messages AFTN valides et invalides dans `fuzz/corpus/f
 #### Avec cargo-fuzz (recommandé)
 
 ```bash
+# Fuzzing AFTN
 cd fuzz
 cargo fuzz run fuzz_parser
+
+# Fuzzing ADEXP
+cargo fuzz run fuzz_adexp_parser
+
+# Fuzzing NMEA
+cargo fuzz run fuzz_nmea_parser
+
+# Fuzzing SBS
+cargo fuzz run fuzz_sbs_parser
+
+# Ou utiliser le Makefile pour tous les fuzzers
+make fuzz-all
 ```
 
 #### Avec AFL++ (plus agressif)
@@ -68,17 +84,18 @@ Les crashes et timeouts sont sauvegardés dans `fuzz/artifacts/`. Analysez-les p
 ### Corpus diversifié
 
 Le corpus initial inclut :
-- Messages valides de toutes les catégories
-- Messages avec séquences
-- Messages avec plusieurs destinations
-- Messages potentiellement invalides (pour tester la robustesse)
+- **AFTN** : Messages valides de toutes les catégories, avec séquences, plusieurs destinations, messages potentiellement invalides
+- **ADEXP** : Messages valides avec différents titres, sections, blocs BEGIN/END, messages potentiellement invalides
+- **NMEA** : Messages GPS et AIS valides, messages invalides (checksum manquant, format incorrect)
+- **SBS** : Messages Mode-S/ADS-B valides (identification, position, vitesse), messages invalides (format incorrect, type manquant)
 
 ### Ajout de cas de test personnalisés
 
-Ajoutez vos propres cas de test dans `fuzz/corpus/fuzz_parser/` :
-- Messages réels capturés
-- Messages malformés connus
-- Cas limites identifiés
+Ajoutez vos propres cas de test dans les dossiers de corpus appropriés :
+- `fuzz/corpus/fuzz_parser/` : Messages AFTN réels capturés, malformés connus, cas limites
+- `fuzz/corpus/fuzz_adexp_parser/` : Messages ADEXP réels, malformés, cas limites
+- `fuzz/corpus/fuzz_nmea_parser/` : Messages NMEA réels, malformés, cas limites
+- `fuzz/corpus/fuzz_sbs_parser/` : Messages SBS réels, malformés, cas limites
 
 ### Fuzzing continu
 

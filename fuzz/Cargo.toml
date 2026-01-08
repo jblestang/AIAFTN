@@ -18,3 +18,11 @@ path = "fuzz_targets/fuzz_parser.rs"
 name = "fuzz_adexp_parser"
 path = "fuzz_targets/fuzz_adexp_parser.rs"
 
+[[bin]]
+name = "fuzz_nmea_parser"
+path = "fuzz_targets/fuzz_nmea_parser.rs"
+
+[[bin]]
+name = "fuzz_sbs_parser"
+path = "fuzz_targets/fuzz_sbs_parser.rs"
+

@@ -5,5 +5,6 @@ mod nmea {
     mod ais_tests;
     mod parser_tests;
     mod validation_tests;
+    mod dysfunctional_tests;
 }
 

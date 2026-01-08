@@ -41,3 +41,6 @@ mod robustness_tests;
 #[path = "aftn/aftn_submessage_tests.rs"]
 mod submessage_tests;
 
+#[path = "aftn/aftn_dysfunctional_tests.rs"]
+mod dysfunctional_tests;
+

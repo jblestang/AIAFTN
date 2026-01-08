@@ -31,10 +31,20 @@ fuzz: corpus
 fuzz-adexp: corpus
 	cd fuzz && cargo fuzz run fuzz_adexp_parser
 
-# Exécuter le fuzzing pour les deux
+# Exécuter le fuzzing NMEA
+fuzz-nmea: corpus
+	cd fuzz && cargo fuzz run fuzz_nmea_parser
+
+# Exécuter le fuzzing SBS
+fuzz-sbs: corpus
+	cd fuzz && cargo fuzz run fuzz_sbs_parser
+
+# Exécuter le fuzzing pour tous les parsers
 fuzz-all: corpus
 	cd fuzz && cargo fuzz run fuzz_parser &
 	cd fuzz && cargo fuzz run fuzz_adexp_parser &
+	cd fuzz && cargo fuzz run fuzz_nmea_parser &
+	cd fuzz && cargo fuzz run fuzz_sbs_parser &
 	wait
 
 # Nettoyer les artefacts de build
