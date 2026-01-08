@@ -1,0 +1,26 @@
+// Grammaire PEST pour SIGMET (Significant Meteorological Information)
+
+sigmet = {
+    "SIGMET" ~ space+ ~ sigmet_content
+}
+
+sigmet_content = {
+    (!"\n" ~ !"\r" ~ printable_char)*
+}
+
+letter = {
+    'A'..'Z' | 'a'..'z'
+}
+
+digit = {
+    '0'..'9'
+}
+
+space = {
+    " "
+}
+
+printable_char = {
+    '\x20'..'\x7E' | '\x80'..'\xFF'
+}
+
