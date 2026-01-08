@@ -1,0 +1,22 @@
+[package]
+name = "aftn"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+pest = "2.7"
+pest_derive = "2.7"
+thiserror = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bin]]
+name = "aftn"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = 3
+lto = true
+

@@ -1,0 +1,15 @@
+/target
+**/*.rs.bk
+Cargo.lock
+*.pest
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# Fuzzing
+fuzz/corpus
+fuzz/artifacts
+fuzz/target
+

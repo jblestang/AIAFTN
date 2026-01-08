@@ -1,0 +1,100 @@
+use serde::{Deserialize, Serialize};
+use crate::error::AftnError;
+use crate::categories::MessageCategory;
+
+/// Représente un message AFTN complet
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct AftnMessage {
+    /// Priorité du message (GG, DD, FF, SS, etc.)
+    pub priority: String,
+    
+    /// Adresses d'origine et de destination
+    pub addresses: Addresses,
+    
+    /// Catégorie du message
+    pub category: MessageCategory,
+    
+    /// Date et heure de transmission
+    pub transmission_time: TransmissionTime,
+    
+    /// Corps du message
+    pub body: String,
+    
+    /// Numéro de séquence (optionnel)
+    pub sequence_number: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Addresses {
+    /// Adresse d'origine (8 caractères)
+    pub origin: String,
+    
+    /// Adresses de destination (8 caractères chacune, séparées par des espaces)
+    pub destinations: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct TransmissionTime {
+    /// Jour du mois (01-31)
+    pub day: u8,
+    
+    /// Heure (00-23)
+    pub hour: u8,
+    
+    /// Minute (00-59)
+    pub minute: u8,
+}
+
+impl AftnMessage {
+    /// Valide la structure du message
+    pub fn validate(&self) -> Result<(), AftnError> {
+        // Validation de la priorité
+        let valid_priorities = ["GG", "DD", "FF", "SS", "KK", "LL"];
+        if !valid_priorities.contains(&self.priority.as_str()) {
+            return Err(AftnError::InvalidPriority(self.priority.clone()));
+        }
+        
+        // Validation de l'adresse d'origine
+        if self.addresses.origin.len() != 8 {
+            return Err(AftnError::InvalidAddress(format!(
+                "Origin address must be 8 characters, got {}",
+                self.addresses.origin.len()
+            )));
+        }
+        
+        // Validation des adresses de destination
+        for dest in &self.addresses.destinations {
+            if dest.len() != 8 {
+                return Err(AftnError::InvalidAddress(format!(
+                    "Destination address must be 8 characters, got {}",
+                    dest.len()
+                )));
+            }
+        }
+        
+        // Validation de la date/heure
+        if self.transmission_time.day > 31 {
+            return Err(AftnError::InvalidDateTime(format!(
+                "Day must be between 01-31, got {}",
+                self.transmission_time.day
+            )));
+        }
+        
+        if self.transmission_time.hour > 23 {
+            return Err(AftnError::InvalidDateTime(format!(
+                "Hour must be between 00-23, got {}",
+                self.transmission_time.hour
+            )));
+        }
+        
+        if self.transmission_time.minute > 59 {
+            return Err(AftnError::InvalidDateTime(format!(
+                "Minute must be between 00-59, got {}",
+                self.transmission_time.minute
+            )));
+        }
+        
+        Ok(())
+    }
+}
+
