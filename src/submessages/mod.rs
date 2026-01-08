@@ -9,6 +9,13 @@ pub mod fpl;
 pub mod pos;
 pub mod operational;
 pub mod generic;
+pub mod abi;
+pub mod chg;
+pub mod cnl;
+pub mod dla;
+pub mod dep;
+pub mod arr;
+pub mod est;
 
 pub use notam::NotamMessage;
 pub use metar::MetarMessage;
@@ -21,6 +28,13 @@ pub use fpl::FplMessage;
 pub use pos::PosMessage;
 pub use operational::OperationalMessage;
 pub use generic::GenericMessage;
+pub use abi::AbiMessage;
+pub use chg::ChgMessage;
+pub use cnl::CnlMessage;
+pub use dla::DlaMessage;
+pub use dep::DepMessage;
+pub use arr::ArrMessage;
+pub use est::EstMessage;
 
 use crate::categories::MessageCategory;
 use crate::error::AftnError;
@@ -42,6 +56,7 @@ pub trait SubMessage: std::fmt::Debug {
 /// Parse un sous-message selon sa catégorie
 pub fn parse_submessage(category: &MessageCategory, body: &str) -> Result<Box<dyn SubMessage>, AftnError> {
     match category {
+        // Messages météorologiques
         MessageCategory::Notam => {
             let msg = NotamMessage::parse(body)?;
             Ok(Box::new(msg))
@@ -70,18 +85,79 @@ pub fn parse_submessage(category: &MessageCategory, body: &str) -> Result<Box<dy
             let msg = VolmetMessage::parse(body)?;
             Ok(Box::new(msg))
         }
+        
+        // Messages de plan de vol
         MessageCategory::FlightPlan => {
             let msg = FplMessage::parse(body)?;
             Ok(Box::new(msg))
         }
+        MessageCategory::Change => {
+            let msg = ChgMessage::parse(body)?;
+            Ok(Box::new(msg))
+        }
+        MessageCategory::Cancel => {
+            let msg = CnlMessage::parse(body)?;
+            Ok(Box::new(msg))
+        }
+        MessageCategory::Delay => {
+            let msg = DlaMessage::parse(body)?;
+            Ok(Box::new(msg))
+        }
+        MessageCategory::Departure => {
+            let msg = DepMessage::parse(body)?;
+            Ok(Box::new(msg))
+        }
+        MessageCategory::Arrival => {
+            let msg = ArrMessage::parse(body)?;
+            Ok(Box::new(msg))
+        }
+        MessageCategory::Estimate => {
+            let msg = EstMessage::parse(body)?;
+            Ok(Box::new(msg))
+        }
+        MessageCategory::AdvanceBoundaryInformation => {
+            let msg = AbiMessage::parse(body)?;
+            Ok(Box::new(msg))
+        }
+        MessageCategory::SupplementaryFlightPlan
+        | MessageCategory::CurrentFlightPlan
+        | MessageCategory::UpdateFlightPlan => {
+            // Utiliser le parser FPL pour les messages liés aux plans de vol
+            // ou le parser opérationnel comme fallback
+            match FplMessage::parse(body) {
+                Ok(msg) => Ok(Box::new(msg)),
+                Err(_) => {
+                    let msg = OperationalMessage::parse(body)?;
+                    Ok(Box::new(msg))
+                }
+            }
+        }
+        
+        // Messages de coordination et autres
+        MessageCategory::Coordination
+        | MessageCategory::Request
+        | MessageCategory::RequestFlightPlan
+        | MessageCategory::RequestSupplementaryFlightPlan
+        | MessageCategory::Denial
+        | MessageCategory::Release
+        | MessageCategory::Return
+        | MessageCategory::AircraftPositionList
+        | MessageCategory::Alerting
+        | MessageCategory::Urgency
+        | MessageCategory::RadioCommunicationFailure
+        | MessageCategory::OceanicClearance
+        | MessageCategory::Information
+        | MessageCategory::MessageAcknowledgement
+        | MessageCategory::Operational(_) => {
+            let msg = OperationalMessage::parse(body)?;
+            Ok(Box::new(msg))
+        }
+        
         MessageCategory::PositionReport => {
             let msg = PosMessage::parse(body)?;
             Ok(Box::new(msg))
         }
-        MessageCategory::Operational(_) => {
-            let msg = OperationalMessage::parse(body)?;
-            Ok(Box::new(msg))
-        }
+        
         MessageCategory::Generic => {
             let msg = GenericMessage::parse(body)?;
             Ok(Box::new(msg))

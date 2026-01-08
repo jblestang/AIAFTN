@@ -22,6 +22,7 @@ Le projet est organisé de manière modulaire pour gérer la complexité des dif
 
 ## Catégories de messages supportées
 
+### Messages météorologiques
 - **NOTAM** : Notice to Airmen
 - **METAR** : Meteorological Aerodrome Report
 - **TAF** : Terminal Aerodrome Forecast
@@ -29,8 +30,44 @@ Le projet est organisé de manière modulaire pour gérer la complexité des dif
 - **AIRMET** : Airmen's Meteorological Information
 - **ATIS** : Automatic Terminal Information Service
 - **VOLMET** : Meteorological Information for Aircraft in Flight
+
+### Messages de plan de vol
 - **FPL** : Flight Plan
+- **CHG** : Change (modification de plan de vol)
+- **CNL** : Cancel (annulation de plan de vol)
+- **DLA** : Delay (retard)
+- **DEP** : Departure (départ)
+- **ARR** : Arrival (arrivée)
+- **EST** : Estimate (estimation)
+- **SPL** : Supplementary Flight Plan
+- **CPL** : Current Flight Plan
+- **UPL** : Update Flight Plan
+
+### Messages de coordination
+- **COF/CDN** : Coordination
+- **ABI** : Advance Boundary Information
+- **REQ** : Request (demande)
+- **RQP** : Request Flight Plan
+- **RQS** : Request Supplementary Flight Plan
+- **DEN** : Denial (refus)
+- **RLS** : Release (libération)
+- **RTN** : Return (retour)
+
+### Messages de position et rapports
 - **POS** : Position Report
+- **APL** : Aircraft Position List
+
+### Messages d'alerte et d'urgence
+- **ALR** : Alerting
+- **URG** : Urgency
+- **RCF** : Radio Communication Failure
+
+### Messages spéciaux
+- **OCL** : Oceanic Clearance
+- **INF** : Information
+- **MAC** : Message Acknowledgement
+
+### Messages génériques
 - **Operational** : Messages opérationnels divers
 - **Generic** : Messages génériques non catégorisés
 

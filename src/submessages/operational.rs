@@ -41,7 +41,35 @@ impl SubMessage for OperationalMessage {
     }
     
     fn category(&self) -> MessageCategory {
-        MessageCategory::Operational(self.op_type.clone())
+        // Essayer de déterminer la catégorie depuis le type opérationnel
+        let op_upper = self.op_type.to_uppercase();
+        match op_upper.as_str() {
+            "CHG" => MessageCategory::Change,
+            "CNL" => MessageCategory::Cancel,
+            "DLA" => MessageCategory::Delay,
+            "DEP" => MessageCategory::Departure,
+            "ARR" => MessageCategory::Arrival,
+            "EST" => MessageCategory::Estimate,
+            "SPL" => MessageCategory::SupplementaryFlightPlan,
+            "CPL" => MessageCategory::CurrentFlightPlan,
+            "UPL" => MessageCategory::UpdateFlightPlan,
+            "COF" | "CDN" => MessageCategory::Coordination,
+            "ABI" => MessageCategory::AdvanceBoundaryInformation,
+            "REQ" => MessageCategory::Request,
+            "RQP" => MessageCategory::RequestFlightPlan,
+            "RQS" => MessageCategory::RequestSupplementaryFlightPlan,
+            "DEN" => MessageCategory::Denial,
+            "RLS" => MessageCategory::Release,
+            "RTN" => MessageCategory::Return,
+            "APL" => MessageCategory::AircraftPositionList,
+            "ALR" => MessageCategory::Alerting,
+            "URG" => MessageCategory::Urgency,
+            "RCF" => MessageCategory::RadioCommunicationFailure,
+            "OCL" => MessageCategory::OceanicClearance,
+            "INF" => MessageCategory::Information,
+            "MAC" => MessageCategory::MessageAcknowledgement,
+            _ => MessageCategory::Operational(self.op_type.clone()),
+        }
     }
 }
 
