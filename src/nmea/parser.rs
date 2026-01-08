@@ -27,6 +27,9 @@ impl NmeaParser {
         let checksum_pos = trimmed.rfind('*')
             .ok_or_else(|| NmeaError::MissingChecksum)?;
         
+        // PANIC: trimmed[checksum_pos + 1..] peut panic si checksum_pos + 1 > trimmed.len(),
+        // mais trimmed.rfind('*') retourne un index valide ou None (ici géré par ok_or_else)
+        // et on prend seulement 2 caractères avec .take(2), donc même si la chaîne est courte, c'est sûr
         let checksum_provided = trimmed[checksum_pos + 1..]
             .chars()
             .take(2)
@@ -34,6 +37,9 @@ impl NmeaParser {
             .to_uppercase();
         
         // Calculer le checksum attendu
+        // PANIC: trimmed[1..checksum_pos] peut panic si checksum_pos < 1 ou checksum_pos > trimmed.len(),
+        // mais le format NMEA garantit qu'il y a au moins un caractère entre $ et * (le type de message),
+        // et trimmed.rfind('*') retourne un index valide, donc checksum_pos >= 1
         let checksum_expected = Self::calculate_checksum(&trimmed[1..checksum_pos]);
         
         // Valider le checksum
@@ -95,6 +101,9 @@ impl NmeaParser {
         
         // Extraire les champs depuis la chaîne brute
         // Format: $MESSAGE_TYPE,field1,field2,...,fieldN*CHECKSUM
+        // PANIC: raw[start_pos + 1..end_pos] peut panic si start_pos + 1 > end_pos ou si les index sont hors limites,
+        // mais la vérification start_pos < end_pos (ligne 101) garantit que start_pos + 1 <= end_pos
+        // et raw.find() retourne des index valides ou None (remplacé par raw.len() ici)
         let start_pos = raw.find(',').unwrap_or(raw.find('*').unwrap_or(raw.len()));
         let end_pos = raw.find('*').unwrap_or(raw.len());
         

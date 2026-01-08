@@ -18,6 +18,8 @@ pub fn validate_callsign(callsign: &str) -> Result<(), AftnError> {
     }
     
     // Le callsign doit commencer par une lettre
+    // PANIC: callsign.chars().next().unwrap() peut panic si callsign est vide,
+    // mais cela est impossible ici car on vérifie is_empty() juste avant (ligne 9)
     let first_char = callsign.chars().next().unwrap();
     if !first_char.is_ascii_alphabetic() {
         return Err(AftnError::InvalidFormat(format!(
@@ -74,6 +76,8 @@ pub fn validate_time_hhmm(time: &str) -> Result<(), AftnError> {
         )));
     }
     
+    // PANIC: time[0..2] et time[2..4] peuvent panic si time.len() < 4,
+    // mais cela est impossible ici car on vérifie time.len() != 4 juste avant (ligne 63)
     let hour: u32 = time[0..2].parse().map_err(|_| {
         AftnError::InvalidFormat(format!("Invalid hour in time: {}", time))
     })?;
@@ -113,6 +117,9 @@ pub fn validate_flight_level(level: &str) -> Result<(), AftnError> {
         )));
     }
     
+    // PANIC: level[1..] peut panic si level est vide,
+    // mais cela est impossible ici car on vérifie is_empty() juste avant (ligne 105)
+    // et on vérifie que level commence par 'F' ou 'A' juste avant (ligne 109)
     let numeric_part = &level[1..];
     if numeric_part.len() != 3 {
         return Err(AftnError::InvalidFormat(format!(

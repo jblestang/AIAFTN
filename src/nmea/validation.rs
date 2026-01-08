@@ -388,6 +388,8 @@ fn validate_time(time: &str) -> Result<(), NmeaError> {
         ));
     }
     
+    // PANIC: time[0..2], time[2..4], time[4..6] peuvent panic si time.len() < 6,
+    // mais cela est impossible ici car on vérifie time.len() < 6 juste avant (ligne 385) et on retourne une erreur
     let hours = &time[0..2];
     let minutes = &time[2..4];
     let seconds = &time[4..6];
@@ -460,6 +462,8 @@ fn validate_date_nmea(date: &str) -> Result<(), NmeaError> {
         ));
     }
     
+    // PANIC: date[0..2], date[2..4], date[4..6] peuvent panic si date.len() < 6,
+    // mais cela est impossible ici car on vérifie date.len() != 6 juste avant (ligne 459) et on retourne une erreur
     let day = &date[0..2];
     let month = &date[2..4];
     let year = &date[4..6];

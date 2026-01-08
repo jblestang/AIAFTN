@@ -249,6 +249,8 @@ impl SbsParser {
         }
         
         // Field 0: "MSG"
+        // PANIC: fields[0] peut panic si fields est vide, mais la grammaire PEST garantit
+        // qu'un message SBS commence par "MSG", donc fields contient au moins 1 élément
         if fields[0] != "MSG" {
             return Err(SbsError::InvalidFormat(
                 format!("Expected 'MSG', got '{}'", fields[0])
@@ -256,6 +258,8 @@ impl SbsParser {
         }
         
         // Field 1: Message type (1-8)
+        // PANIC: fields[1] peut panic si fields.len() < 2, mais la grammaire PEST garantit
+        // qu'un message SBS a au moins "MSG,type", donc fields contient au moins 2 éléments
         let msg_number = fields[1].parse::<u8>()
             .map_err(|_| SbsError::InvalidMessageType(
                 format!("Invalid message type: {}", fields[1])

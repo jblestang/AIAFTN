@@ -288,6 +288,9 @@ pub fn validate_aircraft_id(value: &str) -> Result<(), AdexpError> {
         )));
     }
     
+    // PANIC: value.chars().next().unwrap() peut panic si value est vide,
+    // mais cela est impossible ici car on vérifie value.is_empty() juste avant (ligne 278)
+    // et value.len() > 7 juste après (ligne 285)
     if !value.chars().next().unwrap().is_ascii_alphabetic() {
         return Err(AdexpError::InvalidFieldValue(format!(
             "Identifiant d'aéronef doit commencer par une lettre, reçu: {}",
@@ -513,6 +516,8 @@ pub fn validate_ssr_code(value: &str) -> Result<(), AdexpError> {
     }
     
     // Format 4 chiffres (octal: 0-7)
+    // PANIC: c.to_digit(10).unwrap() peut panic si c n'est pas un chiffre ASCII,
+    // mais cela est impossible ici car on vérifie c.is_ascii_digit() dans le .all() juste avant
     if value.len() == 4 && value.chars().all(|c| c.is_ascii_digit()) {
         for c in value.chars() {
             let digit: u32 = c.to_digit(10).unwrap();
