@@ -40,6 +40,9 @@ pub enum MessageType {
     /// Logoff (LOF)
     Logoff,
     
+    /// Changed Departure (CHGDEP) - Reserved by France
+    ChangedDeparture,
+    
     /// Message générique non catégorisé
     Generic,
 }
@@ -61,6 +64,7 @@ impl MessageType {
             "POS" => Ok(MessageType::Position),
             "LOG" => Ok(MessageType::Logon),
             "LOF" => Ok(MessageType::Logoff),
+            "CHGDEP" => Ok(MessageType::ChangedDeparture),
             _ => Ok(MessageType::Generic),
         }
     }
@@ -80,6 +84,7 @@ impl MessageType {
             MessageType::Position => "POS",
             MessageType::Logon => "LOG",
             MessageType::Logoff => "LOF",
+            MessageType::ChangedDeparture => "CHGDEP",
             MessageType::Generic => "GEN",
         }
     }

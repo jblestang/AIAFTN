@@ -207,6 +207,7 @@ match AdexpParser::parse_message(input) {
 - **POS** : Position
 - **LOG** : Logon
 - **LOF** : Logoff
+- **CHGDEP** : Changed Departure (réservé par la France)
 - **Generic** : Messages génériques non catégorisés
 
 ## Format des messages ADEXP
