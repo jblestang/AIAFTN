@@ -76,7 +76,13 @@ fn test_position_report() {
 /// Tests pour les messages opérationnels
 #[test]
 fn test_operational_messages() {
-    let op1 = "GG LFPGYYYX LFPOYYYX 151230 DEP ABC123 LFPG 151230";
+    // DEP est maintenant une catégorie spécifique
+    let dep = "GG LFPGYYYX LFPOYYYX 151230 DEP ABC123 LFPG 151230";
+    let msg_dep = AftnParser::parse_message(dep).unwrap();
+    assert_eq!(msg_dep.category, MessageCategory::Departure);
+    
+    // Test avec un vrai message opérationnel générique
+    let op1 = "GG LFPGYYYX LFPOYYYX 151230 STA ABC123 LFPG";
     let msg1 = AftnParser::parse_message(op1).unwrap();
     match msg1.category {
         MessageCategory::Operational(_) => {},
