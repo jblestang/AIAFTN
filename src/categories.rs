@@ -135,6 +135,11 @@ impl MessageCategory {
         
         let prefix = &id[..3].to_uppercase();
         
+        // Vérifier d'abord les cas spéciaux avec préfixes de plus de 3 caractères
+        if id.len() >= 5 && &id[..5].to_uppercase() == "AIREP" {
+            return Ok(MessageCategory::AirReport);
+        }
+        
         match prefix.as_str() {
             // Messages météorologiques
             "NOT" | "NOF" => Ok(MessageCategory::Notam),
@@ -184,9 +189,6 @@ impl MessageCategory {
             // Messages additionnels
             "ACP" => Ok(MessageCategory::Acceptance),
             "TCX" => Ok(MessageCategory::TransferOfControl),
-            // AIREP est détecté comme "AIR" + "EP", mais on vérifie d'abord AIRMET
-            // Si le message commence par "AIREP", c'est un Air Report
-            _ if id.len() >= 5 && &id[..5].to_uppercase() == "AIREP" => Ok(MessageCategory::AirReport),
             
             _ => {
                 // Si le préfixe est "GEN", c'est un message générique
