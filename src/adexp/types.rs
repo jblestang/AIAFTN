@@ -40,6 +40,178 @@ pub enum MessageType {
     /// Logoff (LOF)
     Logoff,
     
+    // Standard message titles - ADEXP 3.4
+    /// Advance Boundary Information Message (ABI)
+    Abi,
+    /// Acknowledge Message (ACK)
+    Ack,
+    /// Acceptance Message (ACP)
+    Acp,
+    /// Activation Message (ACT)
+    Act,
+    /// Arrival Management Message (AMA)
+    Ama,
+    /// Aircraft Position Report Message (APR)
+    Apr,
+    /// Airspace Use Plan Message (AUP)
+    Aup,
+    /// Basic Flight Data Message (BFD)
+    Bfd,
+    /// Code Assignment Message (CAM)
+    Cam,
+    /// Code Cancellation Message (CCM)
+    Ccm,
+    /// Co-ordination Message (CDN)
+    Cdn,
+    /// Change to Flight Data Message (CFD)
+    Cfd,
+    /// SSR Code Assignment Message (COD)
+    Cod,
+    /// Code Request Message (COR)
+    Cor,
+    /// Conditional Route Availability Message (CRAM)
+    Cram,
+    /// Code Release Message (CRE)
+    Cre,
+    /// Clearance Response Message (CRP)
+    Crp,
+    /// Clearance Request Message (CRQ)
+    Crq,
+    /// De-Suspension Message (DES)
+    Des,
+    /// Departure Planning Information Message (DPI)
+    Dpi,
+    /// ETFMS Flight Data Message (EFD)
+    Efd,
+    /// Error Message (ERR)
+    Err,
+    /// Flight Confirmation Message (FCM)
+    Fcm,
+    /// Flight Suspension Message (FLS)
+    Fls,
+    /// First System Activation Message (FSA)
+    Fsa,
+    /// Flight Update Message (FUM)
+    Fum,
+    /// Hand-Over Proposal Message (HOP)
+    Hop,
+    /// Individual ATC Modification Message (IACH)
+    Iach,
+    /// Individual ATC Flight Plan Proposal Message (IAFP)
+    Iafp,
+    /// Individual ATC Flight Plan Message (IAPL)
+    Iapl,
+    /// Individual Arrival Message (IARR)
+    Iarr,
+    /// Individual Modification Message (ICHG)
+    Ichg,
+    /// Individual Cancellation Message (ICNL)
+    Icnl,
+    /// Individual Departure Message (IDEP)
+    Idep,
+    /// Individual Delay Message (IDLA)
+    Idla,
+    /// Individual Flight Plan Message (IFPL)
+    Ifpl,
+    /// Information Message (INF)
+    Inf,
+    /// Individual Repetitive Flight Plan (IRPL)
+    Irpl,
+    /// Individual Request Flight Plan Message (IRQP)
+    Irqp,
+    /// Logical Acknowledgement Message (LAM)
+    Lam,
+    /// Logical Rejection Message (LRM)
+    Lrm,
+    /// Message for Abrogation of Co-ordination (MAC)
+    Mac,
+    /// Manual Processing Pending Message (MAN)
+    Man,
+    /// Manual Assumption of Communications Message (MAS)
+    Mas,
+    /// Next Authority Notified Message (NAN)
+    Nan,
+    /// Oceanic Clearance Message (OCM)
+    Ocm,
+    /// Preliminary Activation Message (PAC)
+    Pac,
+    /// Point Message (PNT)
+    Pnt,
+    /// Referred Activate Proposal Message (RAP)
+    Rap,
+    /// Repetitive Flight Plan Data Modification Message (RCHG)
+    Rchg,
+    /// Request Oceanic Clearance Message (RCL)
+    Rcl,
+    /// Repetitive Flight Plan Data Cancellation Message (RCNL)
+    Rcnl,
+    /// Ready Message (REA)
+    Rea,
+    /// Rejection Message (REJ)
+    Rej,
+    /// Revision Message (REV)
+    Rev,
+    /// Ready for Improvement (RFI)
+    Rfi,
+    /// Reject Co-ordination Message (RJC)
+    Rjc,
+    /// Re-Routing Rejection Message (RJT)
+    Rjt,
+    /// Release Message (RLS)
+    Rls,
+    /// Request On Frequency Message (ROF)
+    Rof,
+    /// Re-Routing Notification (RRN)
+    Rrn,
+    /// Release Request Message (RRQ)
+    Rrq,
+    /// Re-Routing Proposal Message (RRP)
+    Rrp,
+    /// Referred Revision Proposal Message (RRV)
+    Rrv,
+    /// Request Tactical Instructions Message (RTI)
+    Rti,
+    /// Slot Allocation Message (SAM)
+    Sam,
+    /// Stand-by Message (SBY)
+    Sby,
+    /// Skip Communication (SCO)
+    Sco,
+    /// Supplementary Data Message (SDM)
+    Sdm,
+    /// Slot Improvement Proposal Message (SIP)
+    Sip,
+    /// Skip Cancellation Message (SKC)
+    Skc,
+    /// Slot Requirement Cancellation Message (SLC)
+    Slc,
+    /// Slot Missed Message (SMM)
+    Smm,
+    /// Slot Proposal Acceptance Message (SPA)
+    Spa,
+    /// Slot Proposal Rejection Message (SRJ)
+    Srj,
+    /// Slot Revision Message (SRM)
+    Srm,
+    /// SIP Wanted Message (SWM)
+    Swm,
+    /// Transfer Initiation Message (TIM)
+    Tim,
+    /// Tactical Instructions Proposal Message (TIP)
+    Tip,
+    /// Updated Airspace Use Plan Message (UUP)
+    Uup,
+    /// Warning Message (WAR)
+    War,
+    /// Crossing Alternate Proposal Message (XAP)
+    Xap,
+    /// Crossing Cancellation Message (XCM)
+    Xcm,
+    /// Crossing Intention Notification Message (XIN)
+    Xin,
+    /// Crossing Request Message (XRQ)
+    Xrq,
+    
     // Reserved message titles - Generated from ADEXP 3.4 Annex C
     /// Activation Message for a Departure (ACTDEP) - Reserved by FRANCE
     Actdep,
@@ -366,7 +538,7 @@ pub enum MessageType {
     Rrec,
 
     /// Re-Routing Notification Message (RRN) - Reserved by NM
-    Rrn,
+    RrnReserved,
 
     /// Repetitive Flight Plan Suspension Message (RSUS) - Reserved by NM
     Rsus,
@@ -484,6 +656,93 @@ impl MessageType {
             "EST" => Ok(MessageType::Estimate),
             "POS" => Ok(MessageType::Position),
             "LOG" => Ok(MessageType::Logon),
+            // Standard message titles
+            "ABI" => Ok(MessageType::Abi),
+            "ACK" => Ok(MessageType::Ack),
+            "ACP" => Ok(MessageType::Acp),
+            "ACT" => Ok(MessageType::Act),
+            "AMA" => Ok(MessageType::Ama),
+            "APR" => Ok(MessageType::Apr),
+            "AUP" => Ok(MessageType::Aup),
+            "BFD" => Ok(MessageType::Bfd),
+            "CAM" => Ok(MessageType::Cam),
+            "CCM" => Ok(MessageType::Ccm),
+            "CDN" => Ok(MessageType::Cdn),
+            "CFD" => Ok(MessageType::Cfd),
+            "COD" => Ok(MessageType::Cod),
+            "COR" => Ok(MessageType::Cor),
+            "CRAM" => Ok(MessageType::Cram),
+            "CRE" => Ok(MessageType::Cre),
+            "CRP" => Ok(MessageType::Crp),
+            "CRQ" => Ok(MessageType::Crq),
+            "DES" => Ok(MessageType::Des),
+            "DPI" => Ok(MessageType::Dpi),
+            "EFD" => Ok(MessageType::Efd),
+            "ERR" => Ok(MessageType::Err),
+            "FCM" => Ok(MessageType::Fcm),
+            "FLS" => Ok(MessageType::Fls),
+            "FSA" => Ok(MessageType::Fsa),
+            "FUM" => Ok(MessageType::Fum),
+            "HOP" => Ok(MessageType::Hop),
+            "IACH" => Ok(MessageType::Iach),
+            "IAFP" => Ok(MessageType::Iafp),
+            "IAPL" => Ok(MessageType::Iapl),
+            "IARR" => Ok(MessageType::Iarr),
+            "ICHG" => Ok(MessageType::Ichg),
+            "ICNL" => Ok(MessageType::Icnl),
+            "IDEP" => Ok(MessageType::Idep),
+            "IDLA" => Ok(MessageType::Idla),
+            "IFPL" => Ok(MessageType::Ifpl),
+            "INF" => Ok(MessageType::Inf),
+            "IRPL" => Ok(MessageType::Irpl),
+            "IRQP" => Ok(MessageType::Irqp),
+            "LAM" => Ok(MessageType::Lam),
+            "LRM" => Ok(MessageType::Lrm),
+            "MAC" => Ok(MessageType::Mac),
+            "MAN" => Ok(MessageType::Man),
+            "MAS" => Ok(MessageType::Mas),
+            "NAN" => Ok(MessageType::Nan),
+            "OCM" => Ok(MessageType::Ocm),
+            "PAC" => Ok(MessageType::Pac),
+            "PNT" => Ok(MessageType::Pnt),
+            "RAP" => Ok(MessageType::Rap),
+            "RCHG" => Ok(MessageType::Rchg),
+            "RCL" => Ok(MessageType::Rcl),
+            "RCNL" => Ok(MessageType::Rcnl),
+            "REA" => Ok(MessageType::Rea),
+            "REJ" => Ok(MessageType::Rej),
+            "REV" => Ok(MessageType::Rev),
+            "RFI" => Ok(MessageType::Rfi),
+            "RJC" => Ok(MessageType::Rjc),
+            "RJT" => Ok(MessageType::Rjt),
+            "RLS" => Ok(MessageType::Rls),
+            "ROF" => Ok(MessageType::Rof),
+            "RRN" => Ok(MessageType::Rrn),  // Standard title takes priority
+            // Note: RRN also exists as reserved title but standard takes precedence
+            "RRQ" => Ok(MessageType::Rrq),
+            "RRP" => Ok(MessageType::Rrp),
+            "RRV" => Ok(MessageType::Rrv),
+            "RTI" => Ok(MessageType::Rti),
+            "SAM" => Ok(MessageType::Sam),
+            "SBY" => Ok(MessageType::Sby),
+            "SCO" => Ok(MessageType::Sco),
+            "SDM" => Ok(MessageType::Sdm),
+            "SIP" => Ok(MessageType::Sip),
+            "SKC" => Ok(MessageType::Skc),
+            "SLC" => Ok(MessageType::Slc),
+            "SMM" => Ok(MessageType::Smm),
+            "SPA" => Ok(MessageType::Spa),
+            "SRJ" => Ok(MessageType::Srj),
+            "SRM" => Ok(MessageType::Srm),
+            "SWM" => Ok(MessageType::Swm),
+            "TIM" => Ok(MessageType::Tim),
+            "TIP" => Ok(MessageType::Tip),
+            "UUP" => Ok(MessageType::Uup),
+            "WAR" => Ok(MessageType::War),
+            "XAP" => Ok(MessageType::Xap),
+            "XCM" => Ok(MessageType::Xcm),
+            "XIN" => Ok(MessageType::Xin),
+            "XRQ" => Ok(MessageType::Xrq),
             "LOF" => Ok(MessageType::Logoff),
             // Reserved message titles
             "ACTDEP" => Ok(MessageType::Actdep),
@@ -594,7 +853,7 @@ impl MessageType {
             "RMG" => Ok(MessageType::Rmg),
             "RRA" => Ok(MessageType::Rra),
             "RREC" => Ok(MessageType::Rrec),
-            "RRN" => Ok(MessageType::Rrn),
+            // Note: RRN is handled as standard title above, not as reserved
             "RSUS" => Ok(MessageType::Rsus),
             "RWYCHGCT" => Ok(MessageType::Rwychgct),
             "RWYMSG" => Ok(MessageType::Rwymsg),
@@ -645,6 +904,93 @@ impl MessageType {
             MessageType::Estimate => "EST",
             MessageType::Position => "POS",
             MessageType::Logon => "LOG",
+            // Standard message titles
+            MessageType::Abi => "ABI",
+            MessageType::Ack => "ACK",
+            MessageType::Acp => "ACP",
+            MessageType::Act => "ACT",
+            MessageType::Ama => "AMA",
+            MessageType::Apr => "APR",
+            MessageType::Aup => "AUP",
+            MessageType::Bfd => "BFD",
+            MessageType::Cam => "CAM",
+            MessageType::Ccm => "CCM",
+            MessageType::Cdn => "CDN",
+            MessageType::Cfd => "CFD",
+            MessageType::Cod => "COD",
+            MessageType::Cor => "COR",
+            MessageType::Cram => "CRAM",
+            MessageType::Cre => "CRE",
+            MessageType::Crp => "CRP",
+            MessageType::Crq => "CRQ",
+            MessageType::Des => "DES",
+            MessageType::Dpi => "DPI",
+            MessageType::Efd => "EFD",
+            MessageType::Err => "ERR",
+            MessageType::Fcm => "FCM",
+            MessageType::Fls => "FLS",
+            MessageType::Fsa => "FSA",
+            MessageType::Fum => "FUM",
+            MessageType::Hop => "HOP",
+            MessageType::Iach => "IACH",
+            MessageType::Iafp => "IAFP",
+            MessageType::Iapl => "IAPL",
+            MessageType::Iarr => "IARR",
+            MessageType::Ichg => "ICHG",
+            MessageType::Icnl => "ICNL",
+            MessageType::Idep => "IDEP",
+            MessageType::Idla => "IDLA",
+            MessageType::Ifpl => "IFPL",
+            MessageType::Inf => "INF",
+            MessageType::Irpl => "IRPL",
+            MessageType::Irqp => "IRQP",
+            MessageType::Lam => "LAM",
+            MessageType::Lrm => "LRM",
+            MessageType::Mac => "MAC",
+            MessageType::Man => "MAN",
+            MessageType::Mas => "MAS",
+            MessageType::Nan => "NAN",
+            MessageType::Ocm => "OCM",
+            MessageType::Pac => "PAC",
+            MessageType::Pnt => "PNT",
+            MessageType::Rap => "RAP",
+            MessageType::Rchg => "RCHG",
+            MessageType::Rcl => "RCL",
+            MessageType::Rcnl => "RCNL",
+            MessageType::Rea => "REA",
+            MessageType::Rej => "REJ",
+            MessageType::Rev => "REV",
+            MessageType::Rfi => "RFI",
+            MessageType::Rjc => "RJC",
+            MessageType::Rjt => "RJT",
+            MessageType::Rls => "RLS",
+            MessageType::Rof => "ROF",
+            MessageType::Rrn => "RRN",  // Standard title
+            // Note: RRN reserved title (RrnReserved) maps to same prefix but standard takes precedence
+            MessageType::Rrq => "RRQ",
+            MessageType::Rrp => "RRP",
+            MessageType::Rrv => "RRV",
+            MessageType::Rti => "RTI",
+            MessageType::Sam => "SAM",
+            MessageType::Sby => "SBY",
+            MessageType::Sco => "SCO",
+            MessageType::Sdm => "SDM",
+            MessageType::Sip => "SIP",
+            MessageType::Skc => "SKC",
+            MessageType::Slc => "SLC",
+            MessageType::Smm => "SMM",
+            MessageType::Spa => "SPA",
+            MessageType::Srj => "SRJ",
+            MessageType::Srm => "SRM",
+            MessageType::Swm => "SWM",
+            MessageType::Tim => "TIM",
+            MessageType::Tip => "TIP",
+            MessageType::Uup => "UUP",
+            MessageType::War => "WAR",
+            MessageType::Xap => "XAP",
+            MessageType::Xcm => "XCM",
+            MessageType::Xin => "XIN",
+            MessageType::Xrq => "XRQ",
             MessageType::Logoff => "LOF",
             // Reserved message titles
             MessageType::Actdep => "ACTDEP",
@@ -755,7 +1101,8 @@ impl MessageType {
             MessageType::Rmg => "RMG",
             MessageType::Rra => "RRA",
             MessageType::Rrec => "RREC",
-            MessageType::Rrn => "RRN",
+            // Note: RRN is handled as standard title above, not as reserved
+            MessageType::RrnReserved => "RRN",  // Reserved title, but standard RRN takes precedence
             MessageType::Rsus => "RSUS",
             MessageType::Rwychgct => "RWYCHGCT",
             MessageType::Rwymsg => "RWYMSG",
