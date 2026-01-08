@@ -207,8 +207,20 @@ match AdexpParser::parse_message(input) {
 - **POS** : Position
 - **LOG** : Logon
 - **LOF** : Logoff
-- **CHGDEP** : Changed Departure (réservé par la France)
 - **Generic** : Messages génériques non catégorisés
+
+### Titres de messages réservés (Annexe C)
+
+Les titres suivants sont réservés selon la spécification ADEXP 3.4 :
+
+- **CHGDEP** : Changed Departure (réservé par la France)
+- **CNLARR** : Cancel Arrival (réservé par la France)
+- **CNLDEP** : Cancel Departure (réservé par la France)
+- **CONFIDM** : Configuration Operational (réservé par la France)
+- **DEC** : Departure (réservé par la France)
+- **EATARR** : Estimated Actual Time Arrival (réservé par la France)
+- **ENDPROC** : End Procedure (réservé par la France)
+- **ANM** : ATFM Notification Message (réservé par NM)
 
 ## Format des messages ADEXP
 

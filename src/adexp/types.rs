@@ -43,6 +43,27 @@ pub enum MessageType {
     /// Changed Departure (CHGDEP) - Reserved by France
     ChangedDeparture,
     
+    /// Cancel Arrival (CNLARR) - Reserved by France
+    CancelArrival,
+    
+    /// Cancel Departure (CNLDEP) - Reserved by France
+    CancelDeparture,
+    
+    /// Configuration Operational (CONFIDM) - Reserved by France
+    ConfigurationOperational,
+    
+    /// Departure (DEC) - Reserved by France
+    DepartureDec,
+    
+    /// Estimated Actual Time Arrival (EATARR) - Reserved by France
+    EstimatedActualTimeArrival,
+    
+    /// End Procedure (ENDPROC) - Reserved by France
+    EndProcedure,
+    
+    /// ATFM Notification Message (ANM) - Reserved by NM
+    AtfmNotificationMessage,
+    
     /// Message générique non catégorisé
     Generic,
 }
@@ -64,7 +85,15 @@ impl MessageType {
             "POS" => Ok(MessageType::Position),
             "LOG" => Ok(MessageType::Logon),
             "LOF" => Ok(MessageType::Logoff),
+            // Reserved message titles
             "CHGDEP" => Ok(MessageType::ChangedDeparture),
+            "CNLARR" => Ok(MessageType::CancelArrival),
+            "CNLDEP" => Ok(MessageType::CancelDeparture),
+            "CONFIDM" => Ok(MessageType::ConfigurationOperational),
+            "DEC" => Ok(MessageType::DepartureDec),
+            "EATARR" => Ok(MessageType::EstimatedActualTimeArrival),
+            "ENDPROC" => Ok(MessageType::EndProcedure),
+            "ANM" => Ok(MessageType::AtfmNotificationMessage),
             _ => Ok(MessageType::Generic),
         }
     }
@@ -84,7 +113,15 @@ impl MessageType {
             MessageType::Position => "POS",
             MessageType::Logon => "LOG",
             MessageType::Logoff => "LOF",
+            // Reserved message titles
             MessageType::ChangedDeparture => "CHGDEP",
+            MessageType::CancelArrival => "CNLARR",
+            MessageType::CancelDeparture => "CNLDEP",
+            MessageType::ConfigurationOperational => "CONFIDM",
+            MessageType::DepartureDec => "DEC",
+            MessageType::EstimatedActualTimeArrival => "EATARR",
+            MessageType::EndProcedure => "ENDPROC",
+            MessageType::AtfmNotificationMessage => "ANM",
             MessageType::Generic => "GEN",
         }
     }
