@@ -1,4 +1,4 @@
-use aftn::{AftnParser, AftnError};
+use aftn::AftnParser;
 use aftn::categories::MessageCategory;
 use std::fs;
 use std::path::Path;
