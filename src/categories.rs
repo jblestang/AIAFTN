@@ -184,8 +184,9 @@ impl MessageCategory {
             // Messages additionnels
             "ACP" => Ok(MessageCategory::Acceptance),
             "TCX" => Ok(MessageCategory::TransferOfControl),
-            "AIR" if id.len() > 3 && &id[3..4] == "E" => Ok(MessageCategory::AirReport), // AIREP
-            "AIR" => Ok(MessageCategory::Airmet), // AIRMET (déjà géré)
+            // AIREP est détecté comme "AIR" + "EP", mais on vérifie d'abord AIRMET
+            // Si le message commence par "AIREP", c'est un Air Report
+            _ if id.len() >= 5 && &id[..5].to_uppercase() == "AIREP" => Ok(MessageCategory::AirReport),
             
             _ => {
                 // Si le préfixe est "GEN", c'est un message générique
@@ -252,7 +253,7 @@ impl MessageCategory {
             // Messages additionnels
             MessageCategory::Acceptance => "ACP",
             MessageCategory::TransferOfControl => "TCX",
-            MessageCategory::AirReport => "AIR",
+            MessageCategory::AirReport => "AIREP",
             
             MessageCategory::Operational(s) => s,
             MessageCategory::Generic => "GEN",
