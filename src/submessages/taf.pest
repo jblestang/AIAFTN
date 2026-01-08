@@ -1,0 +1,70 @@
+// Grammaire PEST pour TAF (Terminal Aerodrome Forecast)
+
+taf = {
+    "TAF" ~ space+ ~ station ~ space+ ~ issue_time ~ space+ ~ valid_period ~ (space+ ~ forecast_element)*
+}
+
+station = {
+    letter{4}
+}
+
+issue_time = {
+    digit{2} ~ digit{2} ~ digit{2} ~ "Z"
+}
+
+valid_period = {
+    digit{2} ~ digit{2} ~ "/" ~ digit{2} ~ digit{2}
+}
+
+forecast_element = {
+    wind | visibility | weather | clouds | change_group
+}
+
+wind = {
+    digit{3} ~ digit{2,3} ~ "KT" | "MPS"
+}
+
+visibility = {
+    digit{4} | "CAVOK"
+}
+
+weather = {
+    (weather_code ~ space?)+
+}
+
+weather_code = {
+    letter{2} ~ digit? ~ letter?
+}
+
+clouds = {
+    cloud_layer ~ (space+ ~ cloud_layer)*
+}
+
+cloud_layer = {
+    ("FEW" | "SCT" | "BKN" | "OVC") ~ digit{3} | "NSC" | "NCD"
+}
+
+change_group = {
+    ("BECMG" | "TEMPO" | "PROB" ~ digit{2}) ~ space+ ~ time_group ~ space+ ~ forecast_element+
+}
+
+time_group = {
+    digit{2} ~ digit{2} ~ "/" ~ digit{2} ~ digit{2}
+}
+
+letter = {
+    'A'..'Z' | 'a'..'z'
+}
+
+digit = {
+    '0'..'9'
+}
+
+space = {
+    " "
+}
+
+printable_char = {
+    '\x20'..'\x7E' | '\x80'..'\xFF'
+}
+

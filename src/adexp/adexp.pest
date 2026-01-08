@@ -1,0 +1,73 @@
+// Grammaire PEST pour ADEXP (Aeronautical Data Exchange Protocol)
+
+// Message ADEXP complet
+message = {
+    start_marker ~ sections ~ end_marker?
+}
+
+// Marqueur de début ADEXP
+start_marker = {
+    "-ADEXP" ~ newline
+}
+
+// Marqueur de fin ADEXP (optionnel)
+end_marker = {
+    "-END" ~ newline?
+}
+
+// Sections du message (champs et en-têtes de section mélangés)
+sections = {
+    (section_header | field)*
+}
+
+// En-tête de section (optionnel, format: -SECTION_NAME)
+section_header = {
+    "-" ~ section_name ~ newline
+}
+
+// Nom de section (lettres et chiffres)
+section_name = {
+    letter+ ~ (letter | digit | "_")*
+}
+
+// Champs de la section
+fields = {
+    field ~ newline
+}
+
+// Un champ (format: -FIELD_NAME VALUE ou -FIELD_NAME)
+field = {
+    "-" ~ field_name ~ (space+ ~ field_value)? ~ newline
+}
+
+// Nom de champ (lettres et chiffres)
+field_name = {
+    letter+ ~ (letter | digit | "_")*
+}
+
+// Valeur d'un champ (peut contenir des espaces, jusqu'à la fin de ligne)
+field_value = {
+    (!newline ~ printable_char)+
+}
+
+// Caractères de base
+letter = {
+    'A'..'Z' | 'a'..'z'
+}
+
+digit = {
+    '0'..'9'
+}
+
+printable_char = {
+    '\x20'..'\x7E' | '\x80'..'\xFF'
+}
+
+space = {
+    " " | "\t"
+}
+
+newline = {
+    "\r\n" | "\n" | "\r"
+}
+

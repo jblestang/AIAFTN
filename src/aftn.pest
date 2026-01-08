@@ -1,0 +1,82 @@
+// Grammaire PEST pour AFTN 3.4
+
+// Message AFTN complet
+message = {
+    start_of_heading? ~ priority ~ space+ ~ addresses ~ space+ ~ transmission_time ~ space+ ~ body ~ sequence_number? ~ end_of_text?
+}
+
+// Priorité du message (2 caractères alphabétiques: GG, DD, FF, SS, KK, LL)
+priority = {
+    "GG" | "DD" | "FF" | "SS" | "KK" | "LL"
+}
+
+// Adresses (origine + une ou plusieurs destinations)
+addresses = {
+    address ~ (space+ ~ address)+
+}
+
+// Adresse AFTN (8 caractères: 4 lettres + 4 caractères)
+address = {
+    letter{4} ~ alphanumeric{4}
+}
+
+// Date et heure de transmission (JJHHMM)
+transmission_time = {
+    day ~ hour ~ minute
+}
+
+day = {
+    digit{2}
+}
+
+hour = {
+    digit{2}
+}
+
+minute = {
+    digit{2}
+}
+
+// Corps du message (texte libre)
+body = {
+    (!sequence_number ~ body_char)+
+}
+
+body_char = {
+    !sequence_number ~ (!"\n" ~ !"\r" ~ printable_char)
+}
+
+// Numéro de séquence (optionnel, format: /SEQ XXX)
+sequence_number = {
+    space* ~ "/SEQ" ~ space+ ~ alphanumeric+
+}
+
+// Caractères de base
+letter = {
+    'A'..'Z' | 'a'..'z'
+}
+
+digit = {
+    '0'..'9'
+}
+
+alphanumeric = {
+    letter | digit
+}
+
+space = {
+    " " | "\t"
+}
+
+printable_char = {
+    '\x20'..'\x7E' | '\x80'..'\xFF'
+}
+
+start_of_heading = {
+    "\x01"  // Start of Heading (optionnel)
+}
+
+end_of_text = {
+    "\x03"  // End of Text (optionnel)
+}
+

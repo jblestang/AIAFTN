@@ -1,0 +1,42 @@
+// Grammaire PEST pour NOTAM (Notice to Airmen)
+
+notam = {
+    notam_prefix ~ (space+ ~ notam_number)? ~ (space+ ~ aerodrome)? ~ (space+ ~ notam_type)? ~ (space+ ~ content)?
+}
+
+notam_prefix = {
+    "NOTAM" | "NOF"
+}
+
+notam_number = {
+    letter ~ digit{4} ~ "/" ~ digit{2}
+}
+
+aerodrome = {
+    letter{4}
+}
+
+notam_type = {
+    "NEW" | "REPLACE" | "CANCEL" | "AMEND"
+}
+
+content = {
+    (!"\n" ~ !"\r" ~ printable_char)*
+}
+
+space = {
+    " "
+}
+
+letter = {
+    'A'..'Z' | 'a'..'z'
+}
+
+digit = {
+    '0'..'9'
+}
+
+printable_char = {
+    '\x20'..'\x7E' | '\x80'..'\xFF'
+}
+
