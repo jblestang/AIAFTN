@@ -16,6 +16,10 @@ pub mod dla;
 pub mod dep;
 pub mod arr;
 pub mod est;
+pub mod spl;
+pub mod req;
+pub mod cof;
+pub mod alr;
 
 pub use notam::NotamMessage;
 pub use metar::MetarMessage;
@@ -35,6 +39,10 @@ pub use dla::DlaMessage;
 pub use dep::DepMessage;
 pub use arr::ArrMessage;
 pub use est::EstMessage;
+pub use spl::SplMessage;
+pub use req::ReqMessage;
+pub use cof::CofMessage;
+pub use alr::AlrMessage;
 
 use crate::categories::MessageCategory;
 use crate::error::AftnError;
@@ -119,8 +127,11 @@ pub fn parse_submessage(category: &MessageCategory, body: &str) -> Result<Box<dy
             let msg = AbiMessage::parse(body)?;
             Ok(Box::new(msg))
         }
-        MessageCategory::SupplementaryFlightPlan
-        | MessageCategory::CurrentFlightPlan
+        MessageCategory::SupplementaryFlightPlan => {
+            let msg = SplMessage::parse(body)?;
+            Ok(Box::new(msg))
+        }
+        MessageCategory::CurrentFlightPlan
         | MessageCategory::UpdateFlightPlan => {
             // Utiliser le parser FPL pour les messages liés aux plans de vol
             // ou le parser opérationnel comme fallback
@@ -134,8 +145,19 @@ pub fn parse_submessage(category: &MessageCategory, body: &str) -> Result<Box<dy
         }
         
         // Messages de coordination et autres
-        MessageCategory::Coordination
-        | MessageCategory::Request
+        MessageCategory::Coordination => {
+            let msg = CofMessage::parse(body)?;
+            Ok(Box::new(msg))
+        }
+        MessageCategory::Request => {
+            let msg = ReqMessage::parse(body)?;
+            Ok(Box::new(msg))
+        }
+        MessageCategory::Alerting => {
+            let msg = AlrMessage::parse(body)?;
+            Ok(Box::new(msg))
+        }
+        MessageCategory::RequestFlightPlan
         | MessageCategory::RequestFlightPlan
         | MessageCategory::RequestSupplementaryFlightPlan
         | MessageCategory::Denial
