@@ -1,0 +1,29 @@
+// Grammaire PEST pour SBS (Mode-S/ADS-B)
+// Format: MSG,type,transmission_type,session_id,aircraft_id,hex_ident,flight_id,date_gen,time_gen,date_log,time_log,callsign,altitude,speed,track,lat,lon,vertical_rate,squawk,alert,emergency,spi,is_on_ground
+// Les champs sont séparés par des virgules et peuvent être vides
+// PEST valide la structure de base (MSG,type), puis le code Rust extrait les champs manuellement
+
+sbs_message = {
+    "MSG" ~ "," ~ message_type ~ "," ~ rest_of_message ~ end_marker?
+}
+
+rest_of_message = {
+    (!end_marker ~ any_char)*
+}
+
+message_type = {
+    digit
+}
+
+// Caractères de base
+digit = {
+    '0'..'9'
+}
+
+any_char = {
+    '\x20'..'\x7E'
+}
+
+end_marker = {
+    "\r\n" | "\n" | "\r"
+}

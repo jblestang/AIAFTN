@@ -1,0 +1,55 @@
+// Grammaire PEST pour NMEA 0183
+
+// Message NMEA complet
+nmea_message = {
+    start_marker ~ message_type ~ fields ~ checksum ~ end_marker?
+}
+
+// Marqueur de début ($ ou !)
+start_marker = {
+    "$" | "!"
+}
+
+// Type de message (2-5 caractères alphanumériques)
+message_type = {
+    letter ~ letter ~ (letter | digit)*
+}
+
+// Champs séparés par des virgules
+fields = {
+    ("," ~ field_value?)*
+}
+
+// Valeur d'un champ (peut être vide)
+field_value = {
+    (!("," | "*") ~ printable_char)*
+}
+
+// Checksum (format: *XX où XX est hexadécimal)
+checksum = {
+    "*" ~ hex_digit ~ hex_digit
+}
+
+// Chiffre hexadécimal
+hex_digit = {
+    '0'..'9' | 'A'..'F' | 'a'..'f'
+}
+
+// Caractères de base
+letter = {
+    'A'..'Z' | 'a'..'z'
+}
+
+digit = {
+    '0'..'9'
+}
+
+printable_char = {
+    '\x20'..'\x7E'
+}
+
+// Marqueur de fin (optionnel)
+end_marker = {
+    "\r\n" | "\n" | "\r"
+}
+
