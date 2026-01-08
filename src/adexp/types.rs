@@ -64,6 +64,9 @@ pub enum MessageType {
     /// ATFM Notification Message (ANM) - Reserved by NM
     AtfmNotificationMessage,
     
+    /// Departure Clearance (CDAFTX) - Reserved by France (ARINC 620)
+    DepartureClearance,
+    
     /// Message générique non catégorisé
     Generic,
 }
@@ -94,6 +97,7 @@ impl MessageType {
             "EATARR" => Ok(MessageType::EstimatedActualTimeArrival),
             "ENDPROC" => Ok(MessageType::EndProcedure),
             "ANM" => Ok(MessageType::AtfmNotificationMessage),
+            "CDAFTX" => Ok(MessageType::DepartureClearance),
             _ => Ok(MessageType::Generic),
         }
     }
@@ -122,6 +126,7 @@ impl MessageType {
             MessageType::EstimatedActualTimeArrival => "EATARR",
             MessageType::EndProcedure => "ENDPROC",
             MessageType::AtfmNotificationMessage => "ANM",
+            MessageType::DepartureClearance => "CDAFTX",
             MessageType::Generic => "GEN",
         }
     }

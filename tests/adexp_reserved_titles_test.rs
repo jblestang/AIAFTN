@@ -16,6 +16,7 @@ const RESERVED_TITLES: &[(&str, &str, &str)] = &[
     ("EATARR", "Estimated Actual Time Arrival", "France"),
     ("ENDPROC", "End Procedure", "France"),
     ("ANM", "ATFM Notification Message", "NM"),
+    ("CDAFTX", "Departure Clearance", "France"),
 ];
 
 #[test]
@@ -118,6 +119,16 @@ fn test_anm_parsing() {
 ";
     let msg = AdexpParser::parse_message(input).unwrap();
     assert_eq!(msg.message_type, AdexpMessageType::AtfmNotificationMessage);
+}
+
+#[test]
+fn test_cdaftx_parsing() {
+    let input = "-ADEXP
+-TITLE CDAFTX
+-ARCID ABC123
+";
+    let msg = AdexpParser::parse_message(input).unwrap();
+    assert_eq!(msg.message_type, AdexpMessageType::DepartureClearance);
 }
 
 #[test]

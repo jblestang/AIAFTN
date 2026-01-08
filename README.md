@@ -221,6 +221,7 @@ Les titres suivants sont réservés selon la spécification ADEXP 3.4 :
 - **EATARR** : Estimated Actual Time Arrival (réservé par la France)
 - **ENDPROC** : End Procedure (réservé par la France)
 - **ANM** : ATFM Notification Message (réservé par NM)
+- **CDAFTX** : Departure Clearance (réservé par la France, ARINC 620)
 
 ## Format des messages ADEXP
 
