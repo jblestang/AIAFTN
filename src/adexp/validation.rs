@@ -2,6 +2,7 @@
 //! Référence: https://www.eurocontrol.int/sites/default/files/2023-06/eurocontrol-released-specification-adexp-3-4.pdf
 
 use crate::adexp::error::AdexpError;
+use crate::adexp::message::Section;
 
 /// Valide un champ ADEXP selon son type et sa valeur
 pub fn validate_field(field_name: &str, value: &str) -> Result<(), AdexpError> {
@@ -80,6 +81,9 @@ pub fn validate_field(field_name: &str, value: &str) -> Result<(), AdexpError> {
         
         // Procedures
         "SID" | "STAR" | "ARRPROC" | "DEPPROC" => validate_procedure(value),
+        
+        // Champs composés - validation de structure uniquement (les sous-champs sont validés séparément)
+        "ROUTE" => validate_route_structure(value),
         
         _ => Ok(()), // Pas de validation spécifique pour ce champ
     }
@@ -1143,6 +1147,279 @@ pub fn validate_procedure(value: &str) -> Result<(), AdexpError> {
     Ok(())
 }
 
+/// Valide la structure d'une route (ROUTE)
+/// Format: texte libre mais peut contenir des éléments structurés selon ICAO Field 15
+pub fn validate_route_structure(value: &str) -> Result<(), AdexpError> {
+    if value.is_empty() {
+        return Ok(()); // ROUTE peut être vide
+    }
+    
+    // Validation basique: vérifier que la route ne contient pas de caractères invalides
+    // Format ICAO Field 15: peut contenir des points, vitesses, niveaux de vol, etc.
+    // Pour l'instant, validation permissive - juste vérifier qu'il n'y a pas de caractères de contrôle
+    if value.chars().any(|c| c.is_control() && c != '\n' && c != '\r' && c != '\t') {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Route contient des caractères de contrôle invalides: {}",
+            value
+        )));
+    }
+    
+    // Longueur raisonnable (max 2000 caractères selon ADEXP)
+    if value.len() > 2000 {
+        return Err(AdexpError::InvalidFieldValue(format!(
+            "Route trop longue (max 2000 caractères), reçu: {} caractères",
+            value.len()
+        )));
+    }
+    
+    Ok(())
+}
+
+/// Valide une structure composée ADDR (Address compound field)
+/// Les sous-champs sont validés individuellement, cette fonction valide la cohérence
+pub fn validate_addr_structure(section: &Section) -> Result<(), AdexpError> {
+    // ADDR peut avoir des sous-champs comme ADDR (adresse), FAC (facility)
+    // Si ADDR est présent, valider que c'est une adresse valide
+    if let Some(addr_values) = section.fields.get("ADDR") {
+        for addr in addr_values {
+            // Adresse ADEXP: généralement 8 caractères alphanumériques
+            if addr.len() > 0 && addr.len() <= 8 {
+                if !addr.chars().all(|c| c.is_ascii_alphanumeric()) {
+                    return Err(AdexpError::InvalidFieldValue(format!(
+                        "Adresse ADDR invalide: {}",
+                        addr
+                    )));
+                }
+            } else if addr.len() > 8 {
+                return Err(AdexpError::InvalidFieldValue(format!(
+                    "Adresse ADDR trop longue (max 8 caractères), reçu: {} caractères",
+                    addr.len()
+                )));
+            }
+        }
+    }
+    
+    // FAC est optionnel, mais s'il est présent, valider
+    if let Some(fac_values) = section.fields.get("FAC") {
+        for fac in fac_values {
+            if fac.len() > 20 {
+                return Err(AdexpError::InvalidFieldValue(format!(
+                    "FAC trop long (max 20 caractères), reçu: {} caractères",
+                    fac.len()
+                )));
+            }
+        }
+    }
+    
+    Ok(())
+}
+
+/// Valide une structure composée RTEPTS (Route Points compound field)
+/// Valide que les points de route sont cohérents
+pub fn validate_rtepts_structure(section: &Section) -> Result<(), AdexpError> {
+    // RTEPTS contient une liste de points avec des sous-champs: PT, PTID, LAT, LON, FL, ETO, ATOT, etc.
+    // Validation: au moins un identifiant de point (PT ou PTID) doit être présent
+    let has_pt = section.fields.contains_key("PT");
+    let has_ptid = section.fields.contains_key("PTID");
+    let has_lat = section.fields.contains_key("LAT");
+    let has_lon = section.fields.contains_key("LON");
+    
+    // Si on a des coordonnées, elles doivent être toutes les deux présentes
+    if has_lat && !has_lon {
+        return Err(AdexpError::InvalidFieldValue(
+            "RTEPTS: LAT présent sans LON".to_string()
+        ));
+    }
+    if has_lon && !has_lat {
+        return Err(AdexpError::InvalidFieldValue(
+            "RTEPTS: LON présent sans LAT".to_string()
+        ));
+    }
+    
+    // Au moins un identifiant de point doit être présent (PT, PTID, ou coordonnées)
+    if !has_pt && !has_ptid && !has_lat {
+        return Err(AdexpError::InvalidFieldValue(
+            "RTEPTS: au moins un identifiant de point (PT, PTID, ou LAT/LON) doit être présent".to_string()
+        ));
+    }
+    
+    // Valider les valeurs des sous-champs si présents
+    if let Some(fl_values) = section.fields.get("FL") {
+        for fl in fl_values {
+            validate_flight_level(fl)?;
+        }
+    }
+    
+    if let Some(lat_values) = section.fields.get("LAT") {
+        for lat in lat_values {
+            validate_latitude(lat)?;
+        }
+    }
+    
+    if let Some(lon_values) = section.fields.get("LON") {
+        for lon in lon_values {
+            validate_longitude(lon)?;
+        }
+    }
+    
+    if let Some(eto_values) = section.fields.get("ETO") {
+        for eto in eto_values {
+            validate_time_hhmm(eto)?;
+        }
+    }
+    
+    if let Some(atot_values) = section.fields.get("ATOT") {
+        for atot in atot_values {
+            validate_time_hhmm(atot)?;
+        }
+    }
+    
+    if let Some(speed_values) = section.fields.get("SPEED") {
+        for speed in speed_values {
+            validate_speed(speed)?;
+        }
+    }
+    
+    Ok(())
+}
+
+/// Valide une structure composée VEC (Vector compound field)
+/// Valide que les éléments de vecteur sont cohérents
+pub fn validate_vec_structure(section: &Section) -> Result<(), AdexpError> {
+    // VEC contient: TRACKANGLE, GROUNDSPEED, ALT
+    // Au moins un élément doit être présent
+    
+    let has_track = section.fields.contains_key("TRACKANGLE");
+    let has_speed = section.fields.contains_key("GROUNDSPEED");
+    let has_alt = section.fields.contains_key("ALT");
+    
+    if !has_track && !has_speed && !has_alt {
+        return Err(AdexpError::InvalidFieldValue(
+            "VEC: au moins un élément (TRACKANGLE, GROUNDSPEED, ou ALT) doit être présent".to_string()
+        ));
+    }
+    
+    // Valider les valeurs si présentes
+    if let Some(track_values) = section.fields.get("TRACKANGLE") {
+        for track in track_values {
+            validate_track_angle(track)?;
+        }
+    }
+    
+    if let Some(speed_values) = section.fields.get("GROUNDSPEED") {
+        for speed in speed_values {
+            validate_speed(speed)?;
+        }
+    }
+    
+    if let Some(alt_values) = section.fields.get("ALT") {
+        for alt in alt_values {
+            validate_altitude(alt)?;
+        }
+    }
+    
+    Ok(())
+}
+
+/// Valide une structure composée REFDATA (Reference data compound field)
+/// Valide que les données de référence sont cohérentes
+pub fn validate_refdata_structure(section: &Section) -> Result<(), AdexpError> {
+    // REFDATA contient: IFPLID, ORIGIN, FAC, NETWORKTYPE
+    // Au moins un élément doit être présent
+    
+    let has_ifplid = section.fields.contains_key("IFPLID");
+    let has_origin = section.fields.contains_key("ORIGIN");
+    let has_fac = section.fields.contains_key("FAC");
+    let has_networktype = section.fields.contains_key("NETWORKTYPE");
+    
+    if !has_ifplid && !has_origin && !has_fac && !has_networktype {
+        return Err(AdexpError::InvalidFieldValue(
+            "REFDATA: au moins un élément (IFPLID, ORIGIN, FAC, ou NETWORKTYPE) doit être présent".to_string()
+        ));
+    }
+    
+    // Valider les valeurs si présentes
+    if let Some(ifplid_values) = section.fields.get("IFPLID") {
+        for ifplid in ifplid_values {
+            validate_ifplid(ifplid)?;
+        }
+    }
+    
+    if let Some(origin_values) = section.fields.get("ORIGIN") {
+        for origin in origin_values {
+            if origin.len() > 20 {
+                return Err(AdexpError::InvalidFieldValue(format!(
+                    "ORIGIN trop long (max 20 caractères), reçu: {} caractères",
+                    origin.len()
+                )));
+            }
+        }
+    }
+    
+    if let Some(fac_values) = section.fields.get("FAC") {
+        for fac in fac_values {
+            if fac.len() > 20 {
+                return Err(AdexpError::InvalidFieldValue(format!(
+                    "FAC trop long (max 20 caractères), reçu: {} caractères",
+                    fac.len()
+                )));
+            }
+        }
+    }
+    
+    if let Some(networktype_values) = section.fields.get("NETWORKTYPE") {
+        for networktype in networktype_values {
+            // NETWORKTYPE: valeurs typiques comme "IFPS", "ATFM", etc.
+            if networktype.len() > 20 {
+                return Err(AdexpError::InvalidFieldValue(format!(
+                    "NETWORKTYPE trop long (max 20 caractères), reçu: {} caractères",
+                    networktype.len()
+                )));
+            }
+        }
+    }
+    
+    Ok(())
+}
+
+/// Valide les structures composées dans une section
+/// Détecte si une section contient un champ composé et valide sa structure
+pub fn validate_compound_fields_in_section(section: &Section) -> Result<(), AdexpError> {
+    // Vérifier si cette section est une section de champ composé
+    match section.name.as_str() {
+        "ADDR" | "RTEPTS" | "VEC" | "REFDATA" => {
+            // C'est une section dédiée à un champ composé
+            match section.name.as_str() {
+                "ADDR" => validate_addr_structure(section)?,
+                "RTEPTS" => validate_rtepts_structure(section)?,
+                "VEC" => validate_vec_structure(section)?,
+                "REFDATA" => validate_refdata_structure(section)?,
+                _ => {}
+            }
+        }
+        _ => {
+            // Vérifier si la section contient des champs composés comme sous-champs
+            // Par exemple, une section peut contenir plusieurs RTEPTS
+            if section.fields.contains_key("RTEPTS") {
+                // Si RTEPTS est présent comme champ, valider la section entière comme RTEPTS
+                validate_rtepts_structure(section)?;
+            }
+            if section.fields.contains_key("VEC") {
+                validate_vec_structure(section)?;
+            }
+            if section.fields.contains_key("REFDATA") {
+                validate_refdata_structure(section)?;
+            }
+            // ADDR peut être présent dans la section principale
+            if section.fields.contains_key("ADDR") {
+                validate_addr_structure(section)?;
+            }
+        }
+    }
+    
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1403,6 +1680,13 @@ mod tests {
         assert!(validate_procedure("STAR.ABC").is_ok());
         assert!(validate_procedure("").is_err()); // Vide
         assert!(validate_procedure("A".repeat(21).as_str()).is_err()); // Trop long
+    }
+
+    #[test]
+    fn test_validate_route_structure() {
+        assert!(validate_route_structure("LFPG LFPB").is_ok());
+        assert!(validate_route_structure("").is_ok()); // Vide autorisé
+        assert!(validate_route_structure("A".repeat(2001).as_str()).is_err()); // Trop long
     }
 }
 

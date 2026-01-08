@@ -87,21 +87,27 @@ impl AdexpMessage {
     fn validate_all_fields(&self) -> Result<(), AdexpError> {
         // Valider les champs de la section principale (vide)
         if let Some(section) = self.sections.get("") {
+            // Valider les champs simples
             for (field_name, values) in &section.fields {
                 for value in values {
                     validation::validate_field(field_name, value)?;
                 }
             }
+            // Valider les structures composées dans la section principale
+            validation::validate_compound_fields_in_section(section)?;
         }
         
         // Valider les champs de toutes les autres sections
         for (section_name, section) in &self.sections {
             if section_name != "" {
+                // Valider les champs simples
                 for (field_name, values) in &section.fields {
                     for value in values {
                         validation::validate_field(field_name, value)?;
                     }
                 }
+                // Valider les structures composées dans cette section
+                validation::validate_compound_fields_in_section(section)?;
             }
         }
         

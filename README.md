@@ -253,9 +253,28 @@ Le parser ADEXP inclut une validation sémantique complète des champs selon la 
 - **IFPS Flight Plan ID** (IFPLID) : Format alphanumérique
 - **Procedures** (SID, STAR, ARRPROC, DEPPROC) : Format alphanumérique avec tirets/points
 
+### Structures composées complexes
+
+Les structures composées suivantes sont également validées avec leur structure interne :
+
+- **ROUTE** : Validation de la structure de route (longueur max 2000 caractères)
+- **RTEPTS** (Route Points) : Validation des points de route avec sous-champs (PT, PTID, LAT, LON, FL, ETO, ATOT, SPEED, etc.)
+  - Au moins un identifiant de point requis (PT, PTID, ou LAT/LON)
+  - LAT et LON doivent être présents ensemble
+  - Validation des sous-champs selon leurs types
+- **VEC** (Vector) : Validation des éléments de vecteur (TRACKANGLE, GROUNDSPEED, ALT)
+  - Au moins un élément requis
+  - Validation des valeurs selon leurs types
+- **ADDR** (Address) : Validation des adresses avec sous-champs (ADDR, FAC)
+  - ADDR: max 8 caractères alphanumériques
+  - FAC: max 20 caractères
+- **REFDATA** (Reference Data) : Validation des données de référence (IFPLID, ORIGIN, FAC, NETWORKTYPE)
+  - Au moins un élément requis
+  - Validation des valeurs selon leurs types
+
 La validation est automatiquement effectuée lors de l'appel à `message.validate()`.
 
-**Total : 65+ types de champs validés sémantiquement**
+**Total : 67+ types de champs validés sémantiquement + 5 structures composées complexes**
 
 ### Exemple de validation
 
