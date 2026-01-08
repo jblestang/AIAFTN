@@ -2,6 +2,10 @@
 
 Implémentation progressive de parseurs AFTN (Aeronautical Fixed Telecommunication Network) version 3.4 et ADEXP (Aeronautical Data Exchange Protocol) en Rust utilisant PEST.
 
+## Documentation
+
+- **[Hiérarchie des Formats](docs/FORMATS_HIERARCHY.md)** : Description détaillée des relations et de la hiérarchie entre les formats AFTN et ADEXP
+
 ## Structure du projet
 
 Le projet est organisé de manière modulaire pour gérer la complexité des différents types de messages :

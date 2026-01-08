@@ -1,7 +1,7 @@
 //! Tests pour valider le parser avec les bases de données AFTN/FPL téléchargées
 
 use aftn::AftnParser;
-use aftn::categories::MessageCategory;
+use aftn::MessageCategory;
 use std::fs;
 use std::path::Path;
 

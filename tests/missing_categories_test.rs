@@ -1,6 +1,6 @@
 //! Test pour vérifier qu'il n'y a pas de catégories manquantes
 
-use aftn::categories::MessageCategory;
+use aftn::MessageCategory;
 
 /// Test que toutes les catégories importantes sont implémentées
 #[test]

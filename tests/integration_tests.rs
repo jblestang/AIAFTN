@@ -1,5 +1,5 @@
 use aftn::{AftnParser, AftnError};
-use aftn::categories::MessageCategory;
+use aftn::MessageCategory;
 
 #[test]
 fn test_integration_complete_notam() {

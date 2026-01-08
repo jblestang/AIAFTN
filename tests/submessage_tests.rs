@@ -1,5 +1,5 @@
 use aftn::{AftnParser, AftnError};
-use aftn::categories::MessageCategory;
+use aftn::MessageCategory;
 
 /// Tests d'intégration pour les sous-messages
 #[test]
@@ -63,7 +63,7 @@ fn test_all_submessage_categories() {
     ];
     
     for (body, expected_category) in test_cases {
-        let submessage = aftn::submessages::parse_submessage(&expected_category, body);
+        let submessage = aftn::aftn::submessages::parse_submessage(&expected_category, body);
         assert!(submessage.is_ok(), "Failed to parse {}: {:?}", body, submessage);
         
         let msg = submessage.unwrap();

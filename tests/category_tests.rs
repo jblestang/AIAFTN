@@ -1,5 +1,4 @@
-use aftn::AftnParser;
-use aftn::categories::MessageCategory;
+use aftn::{AftnParser, MessageCategory};
 
 /// Tests pour les messages NOTAM
 #[test]

@@ -80,48 +80,73 @@ impl AdexpParser {
                     }
                     
                     // Parser les champs inline de cette ligne
-                    let mut field_start = 0;
-                    let line_chars: Vec<char> = current_line.chars().collect();
+                    // Format: -FIELD1 VALUE1 -FIELD2 VALUE2 ...
+                    let chars: Vec<char> = current_line.chars().collect();
+                    let mut char_idx = 0;
                     
-                    while field_start < line_chars.len() {
-                        // Chercher le prochain "-" qui indique un champ
-                        let mut field_pos = field_start;
-                        while field_pos < line_chars.len() && (line_chars[field_pos] != '-' || 
-                               (field_pos > 0 && line_chars[field_pos - 1] != ' ' && line_chars[field_pos - 1] != '\t')) {
-                            field_pos += 1;
+                    while char_idx < chars.len() {
+                        // Ignorer les espaces en début
+                        while char_idx < chars.len() && (chars[char_idx] == ' ' || chars[char_idx] == '\t') {
+                            char_idx += 1;
                         }
                         
-                        if field_pos >= line_chars.len() {
+                        if char_idx >= chars.len() {
                             break;
                         }
                         
-                        // Extraire le nom du champ
-                        let mut field_name_end = field_pos + 1;
-                        while field_name_end < line_chars.len() && 
-                              (line_chars[field_name_end].is_alphanumeric() || line_chars[field_name_end] == '_') {
+                        // Chercher le prochain "-" qui indique un champ
+                        if chars[char_idx] != '-' {
+                            // Si on n'est pas sur un "-", chercher le prochain
+                            while char_idx < chars.len() && chars[char_idx] != '-' {
+                                char_idx += 1;
+                            }
+                            if char_idx >= chars.len() {
+                                break;
+                            }
+                        }
+                        
+                        // On est sur un "-", extraire le nom du champ
+                        char_idx += 1; // Passer le "-"
+                        let field_name_start = char_idx;
+                        let mut field_name_end = char_idx;
+                        
+                        while field_name_end < chars.len() && 
+                              (chars[field_name_end].is_alphanumeric() || chars[field_name_end] == '_') {
                             field_name_end += 1;
                         }
                         
-                        if field_name_end > field_pos + 1 {
-                            let field_name: String = line_chars[field_pos + 1..field_name_end].iter().collect();
+                        if field_name_end > field_name_start {
+                            let field_name: String = chars[field_name_start..field_name_end].iter().collect();
                             
-                            // Extraire la valeur du champ (optionnelle)
-                            let mut field_value_start = field_name_end;
-                            while field_value_start < line_chars.len() && 
-                                  (line_chars[field_value_start] == ' ' || line_chars[field_value_start] == '\t') {
-                                field_value_start += 1;
+                            // Ignorer les espaces après le nom du champ
+                            let mut value_start = field_name_end;
+                            while value_start < chars.len() && 
+                                  (chars[value_start] == ' ' || chars[value_start] == '\t') {
+                                value_start += 1;
                             }
                             
-                            let field_value: String = if field_value_start < line_chars.len() {
-                                line_chars[field_value_start..].iter().collect()
+                            // Extraire la valeur jusqu'au prochain "-" ou fin de ligne
+                            let mut value_end = value_start;
+                            while value_end < chars.len() {
+                                // Si on trouve un "-" précédé d'un espace, c'est le début du prochain champ
+                                if chars[value_end] == '-' && value_end > value_start && 
+                                   (chars[value_end - 1] == ' ' || chars[value_end - 1] == '\t') {
+                                    break;
+                                }
+                                value_end += 1;
+                            }
+                            
+                            let field_value: String = if value_end > value_start {
+                                chars[value_start..value_end].iter().collect()
                             } else {
                                 String::new()
                             };
                             
                             array_section.add_field(field_name, field_value.trim().to_string());
+                            char_idx = value_end;
+                        } else {
+                            break;
                         }
-                        
-                        field_start = field_name_end;
                     }
                     
                     i += 1;

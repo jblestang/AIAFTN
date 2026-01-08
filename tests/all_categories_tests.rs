@@ -1,7 +1,7 @@
 //! Tests pour toutes les catégories de messages AFTN
 
 use aftn::{AftnParser, AftnError};
-use aftn::categories::MessageCategory;
+use aftn::MessageCategory;
 
 /// Test que toutes les catégories sont correctement identifiées
 #[test]
