@@ -54,19 +54,19 @@ impl AftnMessage {
             return Err(AftnError::InvalidPriority(self.priority.clone()));
         }
         
-        // Validation de l'adresse d'origine
-        if self.addresses.origin.len() != 8 {
+        // Validation de l'adresse d'origine (7-8 caractères selon spécification AFTN 3.4)
+        if self.addresses.origin.len() < 7 || self.addresses.origin.len() > 8 {
             return Err(AftnError::InvalidAddress(format!(
-                "Origin address must be 8 characters, got {}",
+                "Origin address must be 7-8 characters, got {}",
                 self.addresses.origin.len()
             )));
         }
         
-        // Validation des adresses de destination
+        // Validation des adresses de destination (7-8 caractères)
         for dest in &self.addresses.destinations {
-            if dest.len() != 8 {
+            if dest.len() < 7 || dest.len() > 8 {
                 return Err(AftnError::InvalidAddress(format!(
-                    "Destination address must be 8 characters, got {}",
+                    "Destination address must be 7-8 characters, got {}",
                     dest.len()
                 )));
             }

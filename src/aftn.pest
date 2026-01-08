@@ -15,9 +15,10 @@ addresses = {
     address ~ (space+ ~ address)+
 }
 
-// Adresse AFTN (8 caractères: 4 lettres + 4 caractères)
+// Adresse AFTN (7-8 caractères: selon spécification AFTN 3.4)
+// Format: 4 lettres (indicatif) + 3-4 caractères (suffixe)
 address = {
-    letter{4} ~ alphanumeric{4}
+    letter{4} ~ alphanumeric{3,4}
 }
 
 // Date et heure de transmission (JJHHMM)
