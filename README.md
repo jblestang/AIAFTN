@@ -211,17 +211,13 @@ match AdexpParser::parse_message(input) {
 
 ### Titres de messages réservés (Annexe C)
 
-Les titres suivants sont réservés selon la spécification ADEXP 3.4 :
+**Tous les 141 titres de messages réservés** selon l'Annexe C de la spécification ADEXP 3.4 sont implémentés, incluant :
 
-- **CHGDEP** : Changed Departure (réservé par la France)
-- **CNLARR** : Cancel Arrival (réservé par la France)
-- **CNLDEP** : Cancel Departure (réservé par la France)
-- **CONFIDM** : Configuration Operational (réservé par la France)
-- **DEC** : Departure (réservé par la France)
-- **EATARR** : Estimated Actual Time Arrival (réservé par la France)
-- **ENDPROC** : End Procedure (réservé par la France)
-- **ANM** : ATFM Notification Message (réservé par NM)
-- **CDAFTX** : Departure Clearance (réservé par la France, ARINC 620)
+- **Titres réservés par la France** (majorité) : CHGDEP, CNLARR, CNLDEP, CONFIDM, DEC, EATARR, ENDPROC, CDAFTX, CTARR, ACTDEP, et 120+ autres
+- **Titres réservés par l'Allemagne** : CHGMSG, CNLMSG, EVENT, FPLMSG, RWYMSG, TTIME
+- **Titres réservés par NM (Network Manager)** : ANM, CNLCOND, CNLREG, EXCOND, FSR, IFPDQ, IFPDQR, IFPDSQ, IFPDSQR, IRQS, ISPL, MODCOND, MODREG, MRA, MRCNL, MRMOD, MRR, NEWREG, NTA, NTACNL, NTAMOD, OLRA, OLRCNL, OLRMOD, RFPDQ, RFPDQR, RFPDSQ, RFPDSQR, RRA, RREC, RRN, RSUS
+
+Pour la liste complète, consultez `src/adexp/types.rs` ou l'Annexe C de la spécification ADEXP 3.4 d'EUROCONTROL.
 
 ## Format des messages ADEXP
 

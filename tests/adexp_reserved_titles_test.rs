@@ -7,6 +7,9 @@ use aftn::adexp::types::MessageType;
 
 /// Liste des titres de messages réservés selon ADEXP 3.4
 /// Référence: Annex C de la spécification EUROCONTROL
+/// Liste complète des titres de messages réservés selon ADEXP 3.4
+/// Référence: Annex C de la spécification EUROCONTROL
+/// Note: Cette liste est un sous-ensemble pour les tests. La liste complète (141 titres) est dans types.rs
 const RESERVED_TITLES: &[(&str, &str, &str)] = &[
     ("CHGDEP", "Changed Departure", "France"),
     ("CNLARR", "Cancel Arrival", "France"),
@@ -48,7 +51,7 @@ fn test_chgdep_parsing() {
 -ARCID ABC123
 ";
     let msg = AdexpParser::parse_message(input).unwrap();
-    assert_eq!(msg.message_type, AdexpMessageType::ChangedDeparture);
+    assert_eq!(msg.message_type, AdexpMessageType::Chgdep);
 }
 
 #[test]
@@ -58,7 +61,7 @@ fn test_cnlarr_parsing() {
 -ARCID ABC123
 ";
     let msg = AdexpParser::parse_message(input).unwrap();
-    assert_eq!(msg.message_type, AdexpMessageType::CancelArrival);
+    assert_eq!(msg.message_type, AdexpMessageType::Cnlarr);
 }
 
 #[test]
@@ -68,7 +71,7 @@ fn test_cnldep_parsing() {
 -ARCID ABC123
 ";
     let msg = AdexpParser::parse_message(input).unwrap();
-    assert_eq!(msg.message_type, AdexpMessageType::CancelDeparture);
+    assert_eq!(msg.message_type, AdexpMessageType::Cnldep);
 }
 
 #[test]
@@ -78,7 +81,7 @@ fn test_confidm_parsing() {
 -ARCID ABC123
 ";
     let msg = AdexpParser::parse_message(input).unwrap();
-    assert_eq!(msg.message_type, AdexpMessageType::ConfigurationOperational);
+    assert_eq!(msg.message_type, AdexpMessageType::Confidm);
 }
 
 #[test]
@@ -88,7 +91,7 @@ fn test_dec_parsing() {
 -ARCID ABC123
 ";
     let msg = AdexpParser::parse_message(input).unwrap();
-    assert_eq!(msg.message_type, AdexpMessageType::DepartureDec);
+    assert_eq!(msg.message_type, AdexpMessageType::Dec);
 }
 
 #[test]
@@ -98,7 +101,7 @@ fn test_eatarr_parsing() {
 -ARCID ABC123
 ";
     let msg = AdexpParser::parse_message(input).unwrap();
-    assert_eq!(msg.message_type, AdexpMessageType::EstimatedActualTimeArrival);
+    assert_eq!(msg.message_type, AdexpMessageType::Eatarr);
 }
 
 #[test]
@@ -108,7 +111,7 @@ fn test_endproc_parsing() {
 -ARCID ABC123
 ";
     let msg = AdexpParser::parse_message(input).unwrap();
-    assert_eq!(msg.message_type, AdexpMessageType::EndProcedure);
+    assert_eq!(msg.message_type, AdexpMessageType::Endproc);
 }
 
 #[test]
@@ -118,7 +121,7 @@ fn test_anm_parsing() {
 -ARCID ABC123
 ";
     let msg = AdexpParser::parse_message(input).unwrap();
-    assert_eq!(msg.message_type, AdexpMessageType::AtfmNotificationMessage);
+    assert_eq!(msg.message_type, AdexpMessageType::Anm);
 }
 
 #[test]
@@ -128,7 +131,7 @@ fn test_cdaftx_parsing() {
 -ARCID ABC123
 ";
     let msg = AdexpParser::parse_message(input).unwrap();
-    assert_eq!(msg.message_type, AdexpMessageType::DepartureClearance);
+    assert_eq!(msg.message_type, AdexpMessageType::Cdaftx);
 }
 
 #[test]
