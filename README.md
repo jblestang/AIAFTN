@@ -219,6 +219,46 @@ match AdexpParser::parse_message(input) {
 
 Pour la liste complète, consultez `src/adexp/types.rs` ou l'Annexe C de la spécification ADEXP 3.4 d'EUROCONTROL.
 
+## Validation sémantique
+
+Le parser ADEXP inclut une validation sémantique complète des champs selon la spécification ADEXP 3.4 :
+
+### Types de validation implémentés
+
+- **Dates** : Format DDMMYY, validation des jours/mois valides
+- **Timestamps** : Formats HHMM et HHMMSS, validation des heures/minutes/secondes
+- **Codes aérodrome** : Format ICAO (4 lettres majuscules)
+- **Identifiants d'aéronef** : 1-7 caractères alphanumériques, commençant par une lettre
+- **Niveaux de vol** : Format FLXXX ou XXX (000-999)
+- **Vitesses** : Formats numériques, MACH (MXXX), avec unités
+- **Coordonnées géographiques** : Latitude (-90 à +90), Longitude (-180 à +180)
+- **Codes SSR** : Format octal (4 chiffres 0-7) ou Mode S (6 hexadécimaux)
+- **Immatriculations** : Format variable selon pays
+- **Codes SELCAL** : 4 lettres (A-S sauf I, N, O, Q)
+
+La validation est automatiquement effectuée lors de l'appel à `message.validate()`.
+
+### Exemple de validation
+
+```rust
+use aftn::AdexpParser;
+
+let input = "-ADEXP
+-TITLE FPL
+-ARCID ABC123
+-ADEP LFPG
+-ADES LFPB
+-EOBD 151220
+-EOBT 1200
+";
+
+let message = AdexpParser::parse_message(input)?;
+match message.validate() {
+    Ok(()) => println!("Message valide"),
+    Err(e) => eprintln!("Erreur de validation: {}", e),
+}
+```
+
 ## Format des messages ADEXP
 
 Un message ADEXP suit cette structure :

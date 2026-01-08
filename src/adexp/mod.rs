@@ -3,6 +3,7 @@ pub mod message;
 pub mod error;
 pub mod types;
 pub mod fields;
+pub mod validation;
 
 pub use error::AdexpError;
 pub use message::AdexpMessage;

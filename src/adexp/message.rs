@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use crate::adexp::error::AdexpError;
 use crate::adexp::types::MessageType;
+use crate::adexp::validation;
 
 /// Représente un message ADEXP complet
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -62,10 +63,13 @@ impl AdexpMessage {
             .and_then(|v| v.ok_or_else(|| AdexpError::MissingField("TITLE".to_string())))
     }
     
-    /// Valide la structure du message
+    /// Valide la structure du message et les valeurs sémantiques des champs
     pub fn validate(&self) -> Result<(), AdexpError> {
         // Vérifier que TITLE existe
         self.get_title()?;
+        
+        // Validation sémantique de tous les champs
+        self.validate_all_fields()?;
         
         // Validation spécifique selon le type de message
         match self.message_type {
@@ -74,6 +78,31 @@ impl AdexpMessage {
             MessageType::Delay => self.validate_dla()?,
             MessageType::Cancel => self.validate_cnl()?,
             _ => {}
+        }
+        
+        Ok(())
+    }
+    
+    /// Valide sémantiquement tous les champs du message
+    fn validate_all_fields(&self) -> Result<(), AdexpError> {
+        // Valider les champs de la section principale (vide)
+        if let Some(section) = self.sections.get("") {
+            for (field_name, values) in &section.fields {
+                for value in values {
+                    validation::validate_field(field_name, value)?;
+                }
+            }
+        }
+        
+        // Valider les champs de toutes les autres sections
+        for (section_name, section) in &self.sections {
+            if section_name != "" {
+                for (field_name, values) in &section.fields {
+                    for value in values {
+                        validation::validate_field(field_name, value)?;
+                    }
+                }
+            }
         }
         
         Ok(())
