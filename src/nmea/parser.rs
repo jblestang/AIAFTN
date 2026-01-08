@@ -11,12 +11,29 @@ use crate::nmea::error::NmeaError;
 pub struct NmeaParser;
 
 impl NmeaParser {
-    /// Parse un message NMEA 0183 complet
+    /// Parse un message NMEA 0183 complet.
+    /// 
+    /// Valide la structure du message, vérifie le checksum, et extrait les champs.
+    /// Format attendu: $MESSAGE_TYPE,field1,field2,...,fieldN*CHECKSUM
+    /// 
+    /// # Arguments
+    /// * `input` - Message NMEA brut (peut contenir des espaces/retours à la ligne)
+    /// 
+    /// # Returns
+    /// * `Ok(NmeaMessage)` - Message parsé avec succès
+    /// * `Err(NmeaError)` - Erreur de format, checksum invalide, ou parsing échoué
+    /// 
+    /// # Exemples
+    /// ```
+    /// use aftn::NmeaParser;
+    /// let input = "$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47";
+    /// let message = NmeaParser::parse_message(input)?;
+    /// ```
     pub fn parse_message(input: &str) -> Result<NmeaMessage, NmeaError> {
         // Nettoyer l'input (supprimer les espaces en début/fin et les retours à la ligne)
         let trimmed = input.trim();
         
-        // Vérifier le format de base
+        // Vérifier le format de base - doit commencer par $ ou !
         if !trimmed.starts_with('$') && !trimmed.starts_with('!') {
             return Err(NmeaError::InvalidFormat(
                 "Message must start with $ or !".to_string()
@@ -61,21 +78,54 @@ impl NmeaParser {
         Self::parse_message_pair(message_pair, trimmed)
     }
     
-    /// Calcule le checksum NMEA (XOR de tous les caractères entre $ et *)
+    /// Calcule le checksum NMEA (XOR de tous les caractères entre $ et *).
+    /// 
+    /// L'algorithme NMEA 0183 utilise un XOR de tous les octets du message
+    /// (entre le $ initial et le * avant le checksum) pour générer un checksum
+    /// sur 2 caractères hexadécimaux.
+    /// 
+    /// # Arguments
+    /// * `data` - Chaîne de caractères à calculer le checksum (sans le $ initial ni le *)
+    /// 
+    /// # Returns
+    /// * Checksum calculé au format hexadécimal (2 caractères majuscules)
+    /// 
+    /// # Exemples
+    /// ```
+    /// let data = "GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,";
+    /// let checksum = NmeaParser::calculate_checksum(data);
+    /// assert_eq!(checksum, "47");
+    /// ```
     fn calculate_checksum(data: &str) -> String {
+        // Initialiser le checksum à 0
         let mut checksum: u8 = 0;
+        // XOR de tous les octets du message
         for byte in data.bytes() {
             checksum ^= byte;
         }
+        // Formater en hexadécimal sur 2 caractères
         format!("{:02X}", checksum)
     }
     
-    /// Parse une paire PEST en NmeaMessage
+    /// Parse une paire PEST en NmeaMessage.
+    /// 
+    /// Extrait le type de message, les champs et le checksum depuis la structure
+    /// parsée par PEST, puis parse les champs manuellement depuis la chaîne brute
+    /// pour gérer correctement les champs optionnels répétés.
+    /// 
+    /// # Arguments
+    /// * `pair` - Paire PEST représentant le message parsé
+    /// * `raw` - Message brut original (pour extraction manuelle des champs)
+    /// 
+    /// # Returns
+    /// * `Ok(NmeaMessage)` - Message parsé avec succès
+    /// * `Err(NmeaError)` - Erreur de parsing ou type de message invalide
     fn parse_message_pair(pair: pest::iterators::Pair<Rule>, raw: &str) -> Result<NmeaMessage, NmeaError> {
         let mut message_type_str = String::new();
         let mut fields = Vec::new();
         let mut checksum = String::new();
         
+        // Extraire les éléments depuis la structure PEST
         for inner_pair in pair.into_inner() {
             match inner_pair.as_rule() {
                 Rule::message_type => {

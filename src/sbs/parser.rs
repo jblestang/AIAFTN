@@ -16,8 +16,30 @@ use crate::sbs::error::SbsError;
 pub struct SbsParser;
 
 impl SbsParser {
-    /// Parse un message SBS complet
-    /// Format: MSG,type,transmission_type,...
+    /// Parse un message SBS (Mode-S/ADS-B) complet.
+    /// 
+    /// Valide la structure du message (doit commencer par "MSG,type") et extrait
+    /// tous les champs selon le format SBS standard. Utilise une approche hybride:
+    /// PEST pour valider la structure de base, puis extraction manuelle des champs
+    /// pour gérer les champs optionnels vides.
+    /// 
+    /// Format: MSG,type,transmission_type,session_id,aircraft_id,hex_ident,flight_id,
+    ///         date_gen,time_gen,date_log,time_log,callsign,altitude,speed,track,
+    ///         lat,lon,vr,squawk,alert,emergency,spi,is_on_ground
+    /// 
+    /// # Arguments
+    /// * `input` - Message SBS brut (format CSV avec virgules comme séparateurs)
+    /// 
+    /// # Returns
+    /// * `Ok(SbsMessage)` - Message parsé avec succès
+    /// * `Err(SbsError)` - Erreur de format, type de message invalide, ou parsing échoué
+    /// 
+    /// # Exemples
+    /// ```
+    /// use aftn::SbsParser;
+    /// let input = "MSG,1,145,29315,4CA2E6,27215,2015/02/05,14:53:22.734,2015/02/05,14:53:22.734,BAW1425,,,,,,,,,,,0";
+    /// let message = SbsParser::parse_message(input)?;
+    /// ```
     pub fn parse_message(input: &str) -> Result<SbsMessage, SbsError> {
         let trimmed = input.trim();
         

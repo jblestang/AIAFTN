@@ -46,9 +46,26 @@ pub struct TransmissionTime {
 }
 
 impl AftnMessage {
-    /// Valide la structure du message
+    /// Valide la structure du message selon la spécification AFTN 3.4.
+    /// 
+    /// Vérifie:
+    /// - La priorité est valide (GG, DD, FF, SS, KK, LL)
+    /// - Les adresses d'origine et de destination ont 7-8 caractères
+    /// - La date/heure est valide (jour 01-31, heure 00-23, minute 00-59)
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Message valide
+    /// * `Err(AftnError)` - Erreur de validation (priorité, adresse, ou date/heure invalide)
+    /// 
+    /// # Exemples
+    /// ```
+    /// use aftn::{AftnParser, AftnMessage};
+    /// let input = "GG LFPGYYYX LFPOYYYX 151230 NOTAM A1234/24";
+    /// let message = AftnParser::parse_message(input)?;
+    /// message.validate()?; // Valide la structure
+    /// ```
     pub fn validate(&self) -> Result<(), AftnError> {
-        // Validation de la priorité
+        // Validation de la priorité selon AFTN 3.4
         let valid_priorities = ["GG", "DD", "FF", "SS", "KK", "LL"];
         if !valid_priorities.contains(&self.priority.as_str()) {
             return Err(AftnError::InvalidPriority(self.priority.clone()));

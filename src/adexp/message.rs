@@ -28,7 +28,16 @@ pub struct Section {
 }
 
 impl AdexpMessage {
-    /// Crée un nouveau message ADEXP
+    /// Crée un nouveau message ADEXP avec les données brutes.
+    /// 
+    /// Initialise un message vide (sans sections, type générique).
+    /// Les sections et le type seront remplis lors du parsing.
+    /// 
+    /// # Arguments
+    /// * `raw` - Message ADEXP brut (pour référence)
+    /// 
+    /// # Returns
+    /// * Nouveau message ADEXP vide prêt à être parsé
     pub fn new(raw: String) -> Self {
         AdexpMessage {
             message_type: MessageType::Generic,
@@ -37,19 +46,52 @@ impl AdexpMessage {
         }
     }
     
-    /// Obtient une section par son nom
+    /// Obtient une section par son nom.
+    /// 
+    /// La section vide ("") représente la section principale (hors blocs BEGIN/END).
+    /// 
+    /// # Arguments
+    /// * `name` - Nom de la section (chaîne vide "" pour la section principale)
+    /// 
+    /// # Returns
+    /// * `Some(&Section)` - Section trouvée
+    /// * `None` - Section non trouvée
     pub fn get_section(&self, name: &str) -> Option<&Section> {
         self.sections.get(name)
     }
     
-    /// Obtient un champ d'une section
+    /// Obtient un champ d'une section (peut avoir plusieurs valeurs).
+    /// 
+    /// Les champs ADEXP peuvent apparaître plusieurs fois avec différentes valeurs.
+    /// Cette méthode retourne toutes les valeurs du champ.
+    /// 
+    /// # Arguments
+    /// * `section` - Nom de la section ("" pour la section principale)
+    /// * `field` - Nom du champ
+    /// 
+    /// # Returns
+    /// * `Ok(Some(&Vec<String>))` - Champ trouvé avec ses valeurs
+    /// * `Ok(None)` - Champ non trouvé
+    /// * `Err(AdexpError::SectionNotFound)` - Section non trouvée
     pub fn get_field(&self, section: &str, field: &str) -> Result<Option<&Vec<String>>, AdexpError> {
         let section = self.sections.get(section)
             .ok_or_else(|| AdexpError::SectionNotFound(section.to_string()))?;
         Ok(section.fields.get(field))
     }
     
-    /// Obtient la première valeur d'un champ
+    /// Obtient la première valeur d'un champ.
+    /// 
+    /// Pour les champs qui apparaissent plusieurs fois, retourne uniquement
+    /// la première occurrence.
+    /// 
+    /// # Arguments
+    /// * `section` - Nom de la section ("" pour la section principale)
+    /// * `field` - Nom du champ
+    /// 
+    /// # Returns
+    /// * `Ok(Some(&String))` - Première valeur du champ trouvée
+    /// * `Ok(None)` - Champ non trouvé
+    /// * `Err(AdexpError::SectionNotFound)` - Section non trouvée
     pub fn get_field_value(&self, section: &str, field: &str) -> Result<Option<&String>, AdexpError> {
         match self.get_field(section, field)? {
             Some(values) => Ok(values.first()),
@@ -57,13 +99,38 @@ impl AdexpMessage {
         }
     }
     
-    /// Obtient le champ TITLE (requis)
+    /// Obtient le champ TITLE (requis pour tous les messages ADEXP).
+    /// 
+    /// Le TITLE détermine le type de message (FPL, CHG, CNL, DLA, etc.).
+    /// 
+    /// # Returns
+    /// * `Ok(&String)` - Valeur du champ TITLE
+    /// * `Err(AdexpError::MissingField)` - Champ TITLE manquant
+    /// * `Err(AdexpError::SectionNotFound)` - Section principale non trouvée
     pub fn get_title(&self) -> Result<&String, AdexpError> {
         self.get_field_value("", "TITLE")
             .and_then(|v| v.ok_or_else(|| AdexpError::MissingField("TITLE".to_string())))
     }
     
-    /// Valide la structure du message et les valeurs sémantiques des champs
+    /// Valide la structure du message et les valeurs sémantiques des champs.
+    /// 
+    /// Effectue une validation complète selon ADEXP 3.4:
+    /// - Vérifie que TITLE existe
+    /// - Valide sémantiquement tous les champs (dates, codes ICAO, etc.)
+    /// - Valide les structures composées (ADDR, VEC, RTEPTS, etc.)
+    /// - Valide selon le type de message (FPL, CHG, CNL, DLA ont des champs requis spécifiques)
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Message valide
+    /// * `Err(AdexpError)` - Erreur de validation (champ manquant, format invalide, etc.)
+    /// 
+    /// # Exemples
+    /// ```
+    /// use aftn::{AdexpParser, AdexpMessage};
+    /// let input = "-ADEXP\n-TITLE FPL\n-ARCID ABC123\n-ADEP LFPG\n-ADES LFPB";
+    /// let message = AdexpParser::parse_message(input)?;
+    /// message.validate()?; // Valide la structure et la sémantique
+    /// ```
     pub fn validate(&self) -> Result<(), AdexpError> {
         // Vérifier que TITLE existe
         self.get_title()?;
