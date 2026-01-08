@@ -39,6 +39,7 @@ fn test_all_main_categories_parsing() {
     let mut success_count = 0;
     let mut failure_count = 0;
     
+    let total = test_cases.len();
     for (message, expected_category) in test_cases {
         match AftnParser::parse_message(message) {
             Ok(msg) => {
@@ -60,7 +61,7 @@ fn test_all_main_categories_parsing() {
     println!("Parsing results: {} success, {} failures", success_count, failure_count);
     
     // Au moins 80% des messages devraient être parsés correctement
-    let success_rate = (success_count as f64 / test_cases.len() as f64) * 100.0;
+    let success_rate = (success_count as f64 / total as f64) * 100.0;
     assert!(success_rate >= 80.0, "Success rate too low: {:.2}%", success_rate);
 }
 
