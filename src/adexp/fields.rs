@@ -129,6 +129,55 @@ pub enum CompoundField {
     RTEPTS,    // Route points compound field
 }
 
+/// Structure pour un champ ADDR (Address compound field)
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct AddrField {
+    pub address: String,
+    pub facility: Option<String>,
+}
+
+/// Structure pour un champ VEC (Vector compound field)
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct VecField {
+    pub track_angle: Option<String>,
+    pub ground_speed: Option<String>,
+    pub altitude: Option<String>,
+}
+
+/// Structure pour un point de route (RTEPTS)
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RoutePoint {
+    pub pt: Option<String>,           // Point identifier
+    pub ptid: Option<String>,         // Point identifier alternative
+    pub lat: Option<String>,          // Latitude
+    pub lon: Option<String>,          // Longitude
+    pub fl: Option<String>,           // Flight level
+    pub eto: Option<String>,          // Estimated time over
+    pub atot: Option<String>,         // Actual time over
+    pub speed: Option<String>,        // Speed
+    pub alt: Option<String>,          // Altitude
+    pub dist: Option<String>,         // Distance
+    pub reason: Option<String>,       // Reason
+    pub ahead: Option<String>,        // Ahead
+}
+
+/// Structure pour un champ REFDATA (Reference data compound field)
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RefDataField {
+    pub ifplid: Option<String>,
+    pub origin: Option<String>,
+    pub fac: Option<String>,
+    pub networktype: Option<String>,
+}
+
+/// Structure pour un champ CSTAT (Current status compound field)
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CstatField {
+    pub status: Option<String>,
+    pub reason: Option<String>,
+    pub statreason: Option<String>,
+}
+
 /// Liste complète des champs ADEXP selon la spécification 3.4
 pub struct AdexpFields;
 
@@ -142,32 +191,37 @@ impl AdexpFields {
             // Identification du vol
             "ARCID" | "ARCTYP" | "CEQPT" | "REG" | "SEL" |
             // Route et navigation
-            "ROUTE" | "SID" | "STAR" | "ATSRT" | "ARRPROC" |
+            "ROUTE" | "SID" | "STAR" | "ATSRT" | "ARRPROC" | "DEPPROC" |
             // Temps
             "EOBD" | "EOBT" | "ETO" | "ATOT" | "ETA" | "EDA" | "AMANTIME" | "TOM" |
+            "ATD" | "ATAD" | "ATOD" | "ATOA" | "ATOTD" | "ATOTA" |
             // Niveaux de vol
-            "RFL" | "CFL" |
+            "RFL" | "CFL" | "AFL" | "TFL" |
             // Vitesse
-            "SPEED" | "GROUNDSPEED" |
+            "SPEED" | "GROUNDSPEED" | "TAS" | "MACH" |
             // Météorologie
-            "WINDIR" | "WINDSPEED" | "AIRTEMP" |
+            "WINDIR" | "WINDSPEED" | "AIRTEMP" | "QNH" | "QFE" |
             // Performance et navigation
-            "PBN" | "FLTRUL" | "FLTTYP" |
+            "PBN" | "FLTRUL" | "FLTTYP" | "NAV" | "COM" | "DAT" | "SUR" |
             // Coordination et identification
-            "IFPLID" | "ORIGIN" | "NETWORKTYPE" | "FAC" | "TITLE" |
+            "IFPLID" | "ORIGIN" | "NETWORKTYPE" | "FAC" | "TITLE" | "SRC" |
             // Statut
-            "CDMSTATUS" | "IFPSDISCREPANCY" |
+            "CDMSTATUS" | "IFPSDISCREPANCY" | "CSTAT" |
             // Référence
             "REFDATA" |
             // Points de route
-            "RTEPTS" | "PT" | "PTID" | "FL" |
+            "RTEPTS" | "PT" | "PTID" | "FL" | "SEQPT" |
             // Champs additionnels
-            "DEPAPTYPE" | "DEPARCTYP" | "OBTLIMIT" |
+            "DEPAPTYPE" | "DEPARCTYP" | "OBTLIMIT" | "OBT" |
             "PRF1" | "PRF2" | "PRF3" | "PRF4" |
-            "TRACKANGLE" | "TTO" | "TTLEET" | "FILTIM" |
-            "SEQPT" | "WKTRC" | "SRC" | "MFX" | "PTDLE" | "CMLTSP" |
+            "TRACKANGLE" | "TTO" | "TTLEET" | "FILTIM" | "EET" |
+            "WKTRC" | "MFX" | "PTDLE" | "CMLTSP" | "VEC" |
             // Champs réservés et additionnels de la spécification 3.4
-            "RELDIST" | "HEXADDR"
+            "RELDIST" | "HEXADDR" | "OPR" | "OPRICAO" | "PER" | "PERICAO" |
+            "ALTN" | "ALTT" | "ALTZ" | "ALTA" | "ALTS" | "ALTR" |
+            "RMK" | "RMKS" | "COMMENT" | "TEXT" | "CODE" | "CODEICAO" |
+            "GEO" | "GEONAME" | "LAT" | "LON" | "ALT" | "ALTNZ" | "DIST" |
+            "NUM" | "TIMEHHMM" | "TIMEHHMMSS" | "DATE" | "REASON" | "AHEAD" | "STATREASON"
         )
     }
     
@@ -176,17 +230,17 @@ impl AdexpFields {
     pub fn is_basic_field(field_name: &str) -> bool {
         matches!(field_name,
             // Identifiants
-            "NUM" | "PT" |
+            "NUM" | "PT" | "PTID" |
             // Temps
-            "TIMEHHMM" | "TIMEHHMMSS" | "DATE" |
+            "TIMEHHMM" | "TIMEHHMMSS" | "DATE" | "TIME" |
             // Géographie
-            "GEONAME" | "LAT" | "LON" |
+            "GEONAME" | "GEO" | "LAT" | "LON" |
             // Altitude et distance
-            "ALT" | "ALTNZ" | "DIST" | "RELDIST" |
+            "ALT" | "ALTNZ" | "DIST" | "RELDIST" | "AHEAD" |
             // Autres
-            "REASON" | "AHEAD" | "STATREASON" |
+            "REASON" | "STATREASON" | "TEXT" | "CODE" |
             // Champs additionnels
-            "SENDER" | "RECVR" | "CMLTSP"
+            "SENDER" | "RECVR" | "CMLTSP" | "COMMENT" | "RMK" | "RMKS"
         )
     }
     
