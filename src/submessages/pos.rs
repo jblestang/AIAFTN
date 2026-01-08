@@ -1,7 +1,13 @@
 use serde::{Deserialize, Serialize};
+use pest::Parser;
+use pest_derive::Parser;
 use crate::categories::MessageCategory;
 use crate::error::AftnError;
 use crate::submessages::SubMessage;
+
+#[derive(Parser)]
+#[grammar = "submessages/pos.pest"]
+struct PosParser;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PosMessage {
@@ -14,10 +20,14 @@ pub struct PosMessage {
 
 impl SubMessage for PosMessage {
     fn parse(body: &str) -> Result<Self, AftnError> {
-        Ok(PosMessage {
-            content: body.to_string(),
-            raw: body.to_string(),
-        })
+        let mut pairs = PosParser::parse(Rule::pos, body)
+            .map_err(|e| AftnError::ParseError(format!("POS parse error: {}", e)))?;
+        
+        let pos_pair = pairs.next().ok_or_else(|| {
+            AftnError::ParseError("Empty POS parse result".to_string())
+        })?;
+        
+        Self::parse_pos_pair(pos_pair, body)
     }
     
     fn validate(&self) -> Result<(), AftnError> {
@@ -29,6 +39,30 @@ impl SubMessage for PosMessage {
     
     fn category(&self) -> MessageCategory {
         MessageCategory::PositionReport
+    }
+}
+
+impl PosMessage {
+    fn parse_pos_pair(pair: pest::iterators::Pair<Rule>, raw: &str) -> Result<Self, AftnError> {
+        let mut content = String::new();
+        
+        for inner_pair in pair.into_inner() {
+            match inner_pair.as_rule() {
+                Rule::pos_content => {
+                    content = inner_pair.as_str().trim().to_string();
+                }
+                _ => {}
+            }
+        }
+        
+        if content.is_empty() {
+            content = raw.to_string();
+        }
+        
+        Ok(PosMessage {
+            content,
+            raw: raw.to_string(),
+        })
     }
 }
 

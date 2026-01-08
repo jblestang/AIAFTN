@@ -2,6 +2,7 @@ pub mod parser;
 pub mod message;
 pub mod error;
 pub mod types;
+pub mod fields;
 
 pub use error::AdexpError;
 pub use message::AdexpMessage;

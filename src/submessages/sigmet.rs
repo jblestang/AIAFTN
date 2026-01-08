@@ -1,7 +1,13 @@
 use serde::{Deserialize, Serialize};
+use pest::Parser;
+use pest_derive::Parser;
 use crate::categories::MessageCategory;
 use crate::error::AftnError;
 use crate::submessages::SubMessage;
+
+#[derive(Parser)]
+#[grammar = "submessages/sigmet.pest"]
+struct SigmetParser;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SigmetMessage {
@@ -14,10 +20,14 @@ pub struct SigmetMessage {
 
 impl SubMessage for SigmetMessage {
     fn parse(body: &str) -> Result<Self, AftnError> {
-        Ok(SigmetMessage {
-            content: body.to_string(),
-            raw: body.to_string(),
-        })
+        let mut pairs = SigmetParser::parse(Rule::sigmet, body)
+            .map_err(|e| AftnError::ParseError(format!("SIGMET parse error: {}", e)))?;
+        
+        let sigmet_pair = pairs.next().ok_or_else(|| {
+            AftnError::ParseError("Empty SIGMET parse result".to_string())
+        })?;
+        
+        Self::parse_sigmet_pair(sigmet_pair, body)
     }
     
     fn validate(&self) -> Result<(), AftnError> {
@@ -29,6 +39,30 @@ impl SubMessage for SigmetMessage {
     
     fn category(&self) -> MessageCategory {
         MessageCategory::Sigmet
+    }
+}
+
+impl SigmetMessage {
+    fn parse_sigmet_pair(pair: pest::iterators::Pair<Rule>, raw: &str) -> Result<Self, AftnError> {
+        let mut content = String::new();
+        
+        for inner_pair in pair.into_inner() {
+            match inner_pair.as_rule() {
+                Rule::sigmet_content => {
+                    content = inner_pair.as_str().trim().to_string();
+                }
+                _ => {}
+            }
+        }
+        
+        if content.is_empty() {
+            content = raw.to_string();
+        }
+        
+        Ok(SigmetMessage {
+            content,
+            raw: raw.to_string(),
+        })
     }
 }
 

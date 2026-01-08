@@ -1,7 +1,13 @@
 use serde::{Deserialize, Serialize};
+use pest::Parser;
+use pest_derive::Parser;
 use crate::categories::MessageCategory;
 use crate::error::AftnError;
 use crate::submessages::SubMessage;
+
+#[derive(Parser)]
+#[grammar = "submessages/operational.pest"]
+struct OperationalParser;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct OperationalMessage {
@@ -17,17 +23,14 @@ pub struct OperationalMessage {
 
 impl SubMessage for OperationalMessage {
     fn parse(body: &str) -> Result<Self, AftnError> {
-        let op_type = if body.len() >= 3 {
-            body[..3].to_uppercase()
-        } else {
-            "UNK".to_string()
-        };
+        let mut pairs = OperationalParser::parse(Rule::operational, body)
+            .map_err(|e| AftnError::ParseError(format!("Operational parse error: {}", e)))?;
         
-        Ok(OperationalMessage {
-            op_type,
-            content: body.to_string(),
-            raw: body.to_string(),
-        })
+        let op_pair = pairs.next().ok_or_else(|| {
+            AftnError::ParseError("Empty operational parse result".to_string())
+        })?;
+        
+        Self::parse_operational_pair(op_pair, body)
     }
     
     fn validate(&self) -> Result<(), AftnError> {
@@ -39,6 +42,39 @@ impl SubMessage for OperationalMessage {
     
     fn category(&self) -> MessageCategory {
         MessageCategory::Operational(self.op_type.clone())
+    }
+}
+
+impl OperationalMessage {
+    fn parse_operational_pair(pair: pest::iterators::Pair<Rule>, raw: &str) -> Result<Self, AftnError> {
+        let mut op_type = String::new();
+        let mut content = String::new();
+        
+        for inner_pair in pair.into_inner() {
+            match inner_pair.as_rule() {
+                Rule::operational_prefix => {
+                    op_type = inner_pair.as_str().trim().to_uppercase();
+                }
+                Rule::operational_content => {
+                    content = inner_pair.as_str().trim().to_string();
+                }
+                _ => {}
+            }
+        }
+        
+        if op_type.is_empty() && raw.len() >= 3 {
+            op_type = raw[..3].to_uppercase();
+        }
+        
+        if content.is_empty() {
+            content = raw.to_string();
+        }
+        
+        Ok(OperationalMessage {
+            op_type,
+            content,
+            raw: raw.to_string(),
+        })
     }
 }
 

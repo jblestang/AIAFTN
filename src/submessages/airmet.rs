@@ -1,7 +1,13 @@
 use serde::{Deserialize, Serialize};
+use pest::Parser;
+use pest_derive::Parser;
 use crate::categories::MessageCategory;
 use crate::error::AftnError;
 use crate::submessages::SubMessage;
+
+#[derive(Parser)]
+#[grammar = "submessages/airmet.pest"]
+struct AirmetParser;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AirmetMessage {
@@ -14,10 +20,14 @@ pub struct AirmetMessage {
 
 impl SubMessage for AirmetMessage {
     fn parse(body: &str) -> Result<Self, AftnError> {
-        Ok(AirmetMessage {
-            content: body.to_string(),
-            raw: body.to_string(),
-        })
+        let mut pairs = AirmetParser::parse(Rule::airmet, body)
+            .map_err(|e| AftnError::ParseError(format!("AIRMET parse error: {}", e)))?;
+        
+        let airmet_pair = pairs.next().ok_or_else(|| {
+            AftnError::ParseError("Empty AIRMET parse result".to_string())
+        })?;
+        
+        Self::parse_airmet_pair(airmet_pair, body)
     }
     
     fn validate(&self) -> Result<(), AftnError> {
@@ -29,6 +39,30 @@ impl SubMessage for AirmetMessage {
     
     fn category(&self) -> MessageCategory {
         MessageCategory::Airmet
+    }
+}
+
+impl AirmetMessage {
+    fn parse_airmet_pair(pair: pest::iterators::Pair<Rule>, raw: &str) -> Result<Self, AftnError> {
+        let mut content = String::new();
+        
+        for inner_pair in pair.into_inner() {
+            match inner_pair.as_rule() {
+                Rule::airmet_content => {
+                    content = inner_pair.as_str().trim().to_string();
+                }
+                _ => {}
+            }
+        }
+        
+        if content.is_empty() {
+            content = raw.to_string();
+        }
+        
+        Ok(AirmetMessage {
+            content,
+            raw: raw.to_string(),
+        })
     }
 }
 
