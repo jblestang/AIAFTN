@@ -109,6 +109,16 @@ pub enum MessageCategory {
     /// Message Acknowledgement
     MessageAcknowledgement,
     
+    // Messages additionnels selon spécification AFTN
+    /// Acceptance (acceptation de plan de vol)
+    Acceptance,
+    
+    /// Transfer of Control
+    TransferOfControl,
+    
+    /// Air Report (rapport aérien)
+    AirReport,
+    
     /// Divers messages opérationnels
     Operational(String),
     
@@ -171,6 +181,12 @@ impl MessageCategory {
             "INF" => Ok(MessageCategory::Information),
             "MAC" => Ok(MessageCategory::MessageAcknowledgement),
             
+            // Messages additionnels
+            "ACP" => Ok(MessageCategory::Acceptance),
+            "TCX" => Ok(MessageCategory::TransferOfControl),
+            "AIR" if id.len() > 3 && &id[3..4] == "E" => Ok(MessageCategory::AirReport), // AIREP
+            "AIR" => Ok(MessageCategory::Airmet), // AIRMET (déjà géré)
+            
             _ => {
                 // Si le préfixe est "GEN", c'est un message générique
                 if prefix == "GEN" {
@@ -232,6 +248,11 @@ impl MessageCategory {
             MessageCategory::OceanicClearance => "OCL",
             MessageCategory::Information => "INF",
             MessageCategory::MessageAcknowledgement => "MAC",
+            
+            // Messages additionnels
+            MessageCategory::Acceptance => "ACP",
+            MessageCategory::TransferOfControl => "TCX",
+            MessageCategory::AirReport => "AIR",
             
             MessageCategory::Operational(s) => s,
             MessageCategory::Generic => "GEN",

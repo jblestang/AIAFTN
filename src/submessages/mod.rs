@@ -158,18 +158,19 @@ pub fn parse_submessage(category: &MessageCategory, body: &str) -> Result<Box<dy
             Ok(Box::new(msg))
         }
         MessageCategory::RequestFlightPlan
-        | MessageCategory::RequestFlightPlan
         | MessageCategory::RequestSupplementaryFlightPlan
         | MessageCategory::Denial
         | MessageCategory::Release
         | MessageCategory::Return
         | MessageCategory::AircraftPositionList
-        | MessageCategory::Alerting
         | MessageCategory::Urgency
         | MessageCategory::RadioCommunicationFailure
         | MessageCategory::OceanicClearance
         | MessageCategory::Information
         | MessageCategory::MessageAcknowledgement
+        | MessageCategory::Acceptance
+        | MessageCategory::TransferOfControl
+        | MessageCategory::AirReport
         | MessageCategory::Operational(_) => {
             let msg = OperationalMessage::parse(body)?;
             Ok(Box::new(msg))

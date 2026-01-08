@@ -102,6 +102,9 @@ fn test_all_categories_prefixes() {
         MessageCategory::OceanicClearance,
         MessageCategory::Information,
         MessageCategory::MessageAcknowledgement,
+        MessageCategory::Acceptance,
+        MessageCategory::TransferOfControl,
+        MessageCategory::AirReport,
     ];
     
     for category in all_categories {
@@ -131,6 +134,8 @@ fn test_category_round_trip() {
         ("SPL", MessageCategory::SupplementaryFlightPlan),
         ("ALR", MessageCategory::Alerting),
         ("POS", MessageCategory::PositionReport),
+        ("ACP", MessageCategory::Acceptance),
+        ("TCX", MessageCategory::TransferOfControl),
     ];
     
     for (prefix, expected_category) in test_cases {

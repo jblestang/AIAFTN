@@ -66,6 +66,9 @@ Le projet est organisé de manière modulaire pour gérer la complexité des dif
 - **OCL** : Oceanic Clearance
 - **INF** : Information
 - **MAC** : Message Acknowledgement
+- **ACP** : Acceptance (acceptation de plan de vol)
+- **TCX** : Transfer of Control
+- **AIREP** : Air Report (rapport aérien)
 
 ### Messages génériques
 - **Operational** : Messages opérationnels divers
