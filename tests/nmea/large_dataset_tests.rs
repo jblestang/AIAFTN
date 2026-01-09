@@ -1,7 +1,7 @@
 //! Tests avec un grand volume de données NMEA 0183
 //! Utilise des fichiers contenant > 10K messages pour tester la robustesse et les performances
 
-use aftn::{NmeaParser, NmeaError};
+use aftn::NmeaParser;
 
 /// Test de parsing d'un grand volume de messages NMEA
 /// Vérifie que le parser peut gérer un grand nombre de messages sans erreur
