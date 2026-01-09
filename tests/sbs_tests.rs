@@ -6,5 +6,6 @@ mod sbs {
     mod message_tests;
     mod dysfunctional_tests;
     mod large_dataset_tests;
+    mod robustness_tests;
 }
 

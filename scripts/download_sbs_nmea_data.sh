@@ -213,7 +213,201 @@ with open("tests/samples/nmea/nmea_large_dataset.txt", "w") as f:
 print("✓ Généré 12000 messages NMEA dans tests/samples/nmea/nmea_large_dataset.txt")
 PYTHON_SCRIPT
 
-# 3. Télécharger des données réelles depuis OpenSky Network (si disponible)
+# 3. Générer des données SBS invalides pour tester la robustesse
+echo "Génération de données SBS invalides pour tests de robustesse..."
+
+python3 << 'PYTHON_SCRIPT'
+import random
+import datetime
+
+def generate_invalid_sbs_message():
+    """Génère un message SBS invalide pour tester la robustesse"""
+    now = datetime.datetime.now()
+    date_str = now.strftime("%Y/%m/%d")
+    time_str = now.strftime("%H:%M:%S.%f")[:-3]
+    
+    error_type = random.choice([
+        'missing_msg',      # Pas de MSG au début
+        'invalid_type',     # Type de message invalide
+        'missing_comma',    # Virgule manquante
+        'invalid_hex',      # Hex ident invalide
+        'out_of_range',     # Valeurs hors limites
+        'malformed_date',   # Date malformée
+        'malformed_time',   # Temps malformé
+        'empty_fields',     # Trop de champs vides
+        'extra_fields',     # Trop de champs
+        'invalid_lat',      # Latitude invalide
+        'invalid_lon',      # Longitude invalide
+        'invalid_alt',      # Altitude invalide
+        'invalid_speed',    # Vitesse invalide
+        'invalid_track',    # Track invalide
+        'truncated',        # Message tronqué
+    ])
+    
+    if error_type == 'missing_msg':
+        return f"INVALID,3,145,{random.randint(10000,99999)},{''.join(random.choices('0123456789ABCDEF', k=6))},{random.randint(10000,99999)},{date_str},{time_str},{date_str},{time_str},,,,,,,,,,,,,,0"
+    elif error_type == 'invalid_type':
+        return f"MSG,99,145,{random.randint(10000,99999)},{''.join(random.choices('0123456789ABCDEF', k=6))},{random.randint(10000,99999)},{date_str},{time_str},{date_str},{time_str},,,,,,,,,,,,,,0"
+    elif error_type == 'missing_comma':
+        return f"MSG3,145,{random.randint(10000,99999)},{''.join(random.choices('0123456789ABCDEF', k=6))},{random.randint(10000,99999)},{date_str},{time_str},{date_str},{time_str},,,,,,,,,,,,,,0"
+    elif error_type == 'invalid_hex':
+        return f"MSG,3,145,{random.randint(10000,99999)},INVALID,{random.randint(10000,99999)},{date_str},{time_str},{date_str},{time_str},,,,,,,,,,,,,,0"
+    elif error_type == 'out_of_range':
+        lat = random.uniform(-100, 100)  # Latitude hors limites
+        lon = random.uniform(-200, 200)  # Longitude hors limites
+        alt = random.uniform(-10000, 100000)  # Altitude extrême
+        return f"MSG,3,145,{random.randint(10000,99999)},{''.join(random.choices('0123456789ABCDEF', k=6))},{random.randint(10000,99999)},{date_str},{time_str},{date_str},{time_str},,{int(alt)},{random.uniform(0,2000):.1f},{random.uniform(0,400):.1f},{lat:.6f},{lon:.6f},,,,,,0"
+    elif error_type == 'malformed_date':
+        return f"MSG,3,145,{random.randint(10000,99999)},{''.join(random.choices('0123456789ABCDEF', k=6))},{random.randint(10000,99999)},2026/13/45,{time_str},2026/13/45,{time_str},,,,,,,,,,,,,,0"
+    elif error_type == 'malformed_time':
+        return f"MSG,3,145,{random.randint(10000,99999)},{''.join(random.choices('0123456789ABCDEF', k=6))},{random.randint(10000,99999)},{date_str},25:99:99.999,{date_str},25:99:99.999,,,,,,,,,,,,,0"
+    elif error_type == 'empty_fields':
+        return f"MSG,3,145,,,,,{date_str},{time_str},{date_str},{time_str},,,,,,,,,,,,,,0"
+    elif error_type == 'extra_fields':
+        return f"MSG,3,145,{random.randint(10000,99999)},{''.join(random.choices('0123456789ABCDEF', k=6))},{random.randint(10000,99999)},{date_str},{time_str},{date_str},{time_str},,,,,,,,,,,,,,EXTRA,FIELD,1,2,3,4,5"
+    elif error_type == 'invalid_lat':
+        lat = random.uniform(91, 180)  # Latitude > 90
+        return f"MSG,3,145,{random.randint(10000,99999)},{''.join(random.choices('0123456789ABCDEF', k=6))},{random.randint(10000,99999)},{date_str},{time_str},{date_str},{time_str},,{random.randint(0,50000)},{random.uniform(0,1000):.1f},{random.uniform(0,360):.1f},{lat:.6f},{random.uniform(-180,180):.6f},,,,,,0"
+    elif error_type == 'invalid_lon':
+        lon = random.uniform(181, 360)  # Longitude > 180
+        return f"MSG,3,145,{random.randint(10000,99999)},{''.join(random.choices('0123456789ABCDEF', k=6))},{random.randint(10000,99999)},{date_str},{time_str},{date_str},{time_str},,{random.randint(0,50000)},{random.uniform(0,1000):.1f},{random.uniform(0,360):.1f},{random.uniform(-90,90):.6f},{lon:.6f},,,,,,0"
+    elif error_type == 'invalid_alt':
+        alt = random.uniform(-50000, -1)  # Altitude négative extrême
+        return f"MSG,3,145,{random.randint(10000,99999)},{''.join(random.choices('0123456789ABCDEF', k=6))},{random.randint(10000,99999)},{date_str},{time_str},{date_str},{time_str},,{int(alt)},{random.uniform(0,1000):.1f},{random.uniform(0,360):.1f},{random.uniform(-90,90):.6f},{random.uniform(-180,180):.6f},,,,,,0"
+    elif error_type == 'invalid_speed':
+        speed = random.uniform(2000, 10000)  # Vitesse trop élevée
+        return f"MSG,4,145,{random.randint(10000,99999)},{''.join(random.choices('0123456789ABCDEF', k=6))},{random.randint(10000,99999)},{date_str},{time_str},{date_str},{time_str},,,{speed:.1f},{random.uniform(0,360):.1f},,,{random.randint(-5000,5000)},,,,,,0"
+    elif error_type == 'invalid_track':
+        track = random.uniform(360, 720)  # Track > 360
+        return f"MSG,4,145,{random.randint(10000,99999)},{''.join(random.choices('0123456789ABCDEF', k=6))},{random.randint(10000,99999)},{date_str},{time_str},{date_str},{time_str},,,{random.uniform(0,1000):.1f},{track:.1f},,,{random.randint(-5000,5000)},,,,,,0"
+    elif error_type == 'truncated':
+        # Message tronqué au milieu
+        return f"MSG,3,145,{random.randint(10000,99999)},{''.join(random.choices('0123456789ABCDEF', k=6))},{random.randint(10000,99999)},{date_str},{time_str}"
+    else:
+        return f"MSG,3,145,{random.randint(10000,99999)},{''.join(random.choices('0123456789ABCDEF', k=6))},{random.randint(10000,99999)},{date_str},{time_str},{date_str},{time_str},,,,,,,,,,,,,,0"
+
+# Générer 5000 messages SBS invalides
+with open("tests/samples/sbs/sbs_invalid_dataset.txt", "w") as f:
+    for i in range(5000):
+        msg = generate_invalid_sbs_message()
+        f.write(msg + "\n")
+
+print("✓ Généré 5000 messages SBS invalides dans tests/samples/sbs/sbs_invalid_dataset.txt")
+PYTHON_SCRIPT
+
+# 4. Générer des données NMEA invalides pour tester la robustesse
+echo "Génération de données NMEA invalides pour tests de robustesse..."
+
+python3 << 'PYTHON_SCRIPT'
+import random
+import datetime
+
+def calculate_nmea_checksum(data):
+    """Calcule le checksum NMEA (XOR de tous les octets)"""
+    checksum = 0
+    for byte in data.encode('ascii'):
+        checksum ^= byte
+    return f"{checksum:02X}"
+
+def generate_invalid_nmea_message():
+    """Génère un message NMEA invalide pour tester la robustesse"""
+    error_type = random.choice([
+        'missing_start',    # Pas de $ ou !
+        'invalid_checksum', # Checksum incorrect
+        'missing_checksum', # Pas de checksum
+        'truncated',        # Message tronqué
+        'invalid_format',   # Format invalide
+        'invalid_time',     # Temps invalide
+        'invalid_date',     # Date invalide
+        'invalid_lat',      # Latitude invalide
+        'invalid_lon',      # Longitude invalide
+        'out_of_range',     # Valeurs hors limites
+        'missing_fields',   # Champs manquants
+        'extra_fields',     # Trop de champs
+        'invalid_chars',    # Caractères invalides
+        'malformed',        # Message malformé
+    ])
+    
+    time = datetime.datetime.now().strftime("%H%M%S.%f")[:-4]
+    date = datetime.datetime.now().strftime("%d%m%y")
+    
+    if error_type == 'missing_start':
+        # Pas de $ ou ! au début
+        msg = f"GPGGA,{time},{random.randint(0,90):02d}{random.uniform(0,59.999):05.2f},N,{random.randint(0,180):03d}{random.uniform(0,59.999):05.2f},E,1,{random.randint(0,12):02d},{random.uniform(0.5,3.0):.1f},{random.uniform(-100,10000):.1f},M,{random.uniform(-50,50):.1f},M,,"
+        checksum = calculate_nmea_checksum(msg)
+        return f"{msg}*{checksum}"
+    elif error_type == 'invalid_checksum':
+        # Checksum incorrect
+        msg = f"GPGGA,{time},{random.randint(0,90):02d}{random.uniform(0,59.999):05.2f},N,{random.randint(0,180):03d}{random.uniform(0,59.999):05.2f},E,1,{random.randint(0,12):02d},{random.uniform(0.5,3.0):.1f},{random.uniform(-100,10000):.1f},M,{random.uniform(-50,50):.1f},M,,"
+        return f"${msg}*XX"  # Checksum invalide
+    elif error_type == 'missing_checksum':
+        # Pas de checksum
+        msg = f"GPGGA,{time},{random.randint(0,90):02d}{random.uniform(0,59.999):05.2f},N,{random.randint(0,180):03d}{random.uniform(0,59.999):05.2f},E,1,{random.randint(0,12):02d},{random.uniform(0.5,3.0):.1f},{random.uniform(-100,10000):.1f},M,{random.uniform(-50,50):.1f},M,,"
+        return f"${msg}"
+    elif error_type == 'truncated':
+        # Message tronqué
+        return f"$GPGGA,{time},{random.randint(0,90):02d}{random.uniform(0,59.999):05.2f},N"
+    elif error_type == 'invalid_format':
+        # Format invalide (pas de virgules)
+        return f"$GPGGA {time} {random.randint(0,90):02d}{random.uniform(0,59.999):05.2f} N"
+    elif error_type == 'invalid_time':
+        # Temps invalide (25:99:99)
+        msg = f"GPRMC,259999.99,A,{random.randint(0,90):02d}{random.uniform(0,59.999):05.2f},N,{random.randint(0,180):03d}{random.uniform(0,59.999):05.2f},E,{random.uniform(0,50):.1f},{random.uniform(0,360):.1f},{date},{random.uniform(0,180):.1f},W"
+        checksum = calculate_nmea_checksum(msg)
+        return f"${msg}*{checksum}"
+    elif error_type == 'invalid_date':
+        # Date invalide (99/99/99)
+        msg = f"GPRMC,{time},A,{random.randint(0,90):02d}{random.uniform(0,59.999):05.2f},N,{random.randint(0,180):03d}{random.uniform(0,59.999):05.2f},E,{random.uniform(0,50):.1f},{random.uniform(0,360):.1f},999999,{random.uniform(0,180):.1f},W"
+        checksum = calculate_nmea_checksum(msg)
+        return f"${msg}*{checksum}"
+    elif error_type == 'invalid_lat':
+        # Latitude invalide (> 90)
+        msg = f"GPGGA,{time},9999.99,N,{random.randint(0,180):03d}{random.uniform(0,59.999):05.2f},E,1,{random.randint(0,12):02d},{random.uniform(0.5,3.0):.1f},{random.uniform(-100,10000):.1f},M,{random.uniform(-50,50):.1f},M,,"
+        checksum = calculate_nmea_checksum(msg)
+        return f"${msg}*{checksum}"
+    elif error_type == 'invalid_lon':
+        # Longitude invalide (> 180)
+        msg = f"GPGGA,{time},{random.randint(0,90):02d}{random.uniform(0,59.999):05.2f},N,99999.99,E,1,{random.randint(0,12):02d},{random.uniform(0.5,3.0):.1f},{random.uniform(-100,10000):.1f},M,{random.uniform(-50,50):.1f},M,,"
+        checksum = calculate_nmea_checksum(msg)
+        return f"${msg}*{checksum}"
+    elif error_type == 'out_of_range':
+        # Valeurs hors limites
+        msg = f"GPVTG,{random.uniform(400,500):.1f},T,{random.uniform(400,500):.1f},M,{random.uniform(200,300):.1f},N,{random.uniform(400,500):.1f},K,M"
+        checksum = calculate_nmea_checksum(msg)
+        return f"${msg}*{checksum}"
+    elif error_type == 'missing_fields':
+        # Champs manquants
+        msg = f"GPGGA,{time},,N,,E,1,,,M,,M,,"
+        checksum = calculate_nmea_checksum(msg)
+        return f"${msg}*{checksum}"
+    elif error_type == 'extra_fields':
+        # Trop de champs
+        msg = f"GPGGA,{time},{random.randint(0,90):02d}{random.uniform(0,59.999):05.2f},N,{random.randint(0,180):03d}{random.uniform(0,59.999):05.2f},E,1,{random.randint(0,12):02d},{random.uniform(0.5,3.0):.1f},{random.uniform(-100,10000):.1f},M,{random.uniform(-50,50):.1f},M,,EXTRA,FIELD,1,2,3"
+        checksum = calculate_nmea_checksum(msg)
+        return f"${msg}*{checksum}"
+    elif error_type == 'invalid_chars':
+        # Caractères invalides (utiliser des caractères non-ASCII valides mais problématiques)
+        msg = f"GPGGA,{time},XXYY.ZZ,N,{random.randint(0,180):03d}{random.uniform(0,59.999):05.2f},E,1,{random.randint(0,12):02d},{random.uniform(0.5,3.0):.1f},{random.uniform(-100,10000):.1f},M,{random.uniform(-50,50):.1f},M,,"
+        checksum = calculate_nmea_checksum(msg)
+        return f"${msg}*{checksum}"
+    elif error_type == 'malformed':
+        # Message complètement malformé
+        return f"$INVALID_MESSAGE_FORMAT*XX"
+    else:
+        msg = f"GPGGA,{time},{random.randint(0,90):02d}{random.uniform(0,59.999):05.2f},N,{random.randint(0,180):03d}{random.uniform(0,59.999):05.2f},E,1,{random.randint(0,12):02d},{random.uniform(0.5,3.0):.1f},{random.uniform(-100,10000):.1f},M,{random.uniform(-50,50):.1f},M,,"
+        checksum = calculate_nmea_checksum(msg)
+        return f"${msg}*{checksum}"
+
+# Générer 5000 messages NMEA invalides
+with open("tests/samples/nmea/nmea_invalid_dataset.txt", "w") as f:
+    for i in range(5000):
+        msg = generate_invalid_nmea_message()
+        f.write(msg + "\n")
+
+print("✓ Généré 5000 messages NMEA invalides dans tests/samples/nmea/nmea_invalid_dataset.txt")
+PYTHON_SCRIPT
+
+# 5. Télécharger des données réelles depuis OpenSky Network (si disponible)
 echo "Tentative de téléchargement de données SBS depuis OpenSky Network..."
 
 # Note: OpenSky Network nécessite une API key pour les grandes quantités de données
@@ -271,8 +465,10 @@ PYTHON_SCRIPT
 echo ""
 echo "=== Résumé ==="
 echo "Données générées:"
-echo "  - SBS: tests/samples/sbs/sbs_large_dataset.txt (15000 messages)"
-echo "  - NMEA: tests/samples/nmea/nmea_large_dataset.txt (12000 messages)"
+echo "  - SBS valides: tests/samples/sbs/sbs_large_dataset.txt (15000 messages)"
+echo "  - SBS invalides: tests/samples/sbs/sbs_invalid_dataset.txt (5000 messages)"
+echo "  - NMEA valides: tests/samples/nmea/nmea_large_dataset.txt (12000 messages)"
+echo "  - NMEA invalides: tests/samples/nmea/nmea_invalid_dataset.txt (5000 messages)"
 echo ""
-echo "Total: > 27000 messages pour les tests"
+echo "Total: > 37000 messages pour les tests (27000 valides + 10000 invalides)"
 
