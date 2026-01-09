@@ -8,5 +8,6 @@ mod nmea {
     mod dysfunctional_tests;
     mod large_dataset_tests;
     mod robustness_tests;
+    mod checksum_validation_tests;
 }
 
