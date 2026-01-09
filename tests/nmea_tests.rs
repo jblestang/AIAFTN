@@ -6,5 +6,6 @@ mod nmea {
     mod parser_tests;
     mod validation_tests;
     mod dysfunctional_tests;
+    mod large_dataset_tests;
 }
 

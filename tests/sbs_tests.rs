@@ -5,5 +5,6 @@ mod sbs {
     mod validation_tests;
     mod message_tests;
     mod dysfunctional_tests;
+    mod large_dataset_tests;
 }
 
