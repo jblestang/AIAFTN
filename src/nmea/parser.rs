@@ -40,6 +40,14 @@ impl NmeaParser {
             ));
         }
         
+        // Vérifier qu'il n'y a pas d'espaces entre virgules (non conforme à NMEA 0183)
+        // Les espaces entre virgules sont interdits selon la spécification
+        if trimmed.contains(", ") || trimmed.contains(" ,") {
+            return Err(NmeaError::InvalidFormat(
+                "NMEA 0183 does not allow spaces between commas. Fields must be separated by commas without spaces.".to_string()
+            ));
+        }
+        
         // Trouver le checksum
         let checksum_pos = trimmed.rfind('*')
             .ok_or_else(|| NmeaError::MissingChecksum)?;
@@ -161,7 +169,7 @@ impl NmeaParser {
             let fields_str = &raw[start_pos + 1..end_pos];
             fields = fields_str
                 .split(',')
-                .map(|s| s.to_string())
+                .map(|s| s.trim().to_string()) // Trim les espaces en début/fin de champ (conformité NMEA 0183)
                 .collect();
         }
         

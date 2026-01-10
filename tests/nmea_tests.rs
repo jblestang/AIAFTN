@@ -9,5 +9,6 @@ mod nmea {
     mod large_dataset_tests;
     mod robustness_tests;
     mod checksum_validation_tests;
+    mod whitespace_tests;
 }
 
