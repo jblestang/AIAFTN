@@ -99,7 +99,7 @@ mod tests {
     #[test]
     fn test_nmea_message_serialize() {
         let message = NmeaMessage::new(
-            crate::nmea::types::NmeaMessageType::GpGga,
+            crate::nmea::types::NmeaMessageType::GPGGA,
             vec![
                 "123519".to_string(),
                 "4807.038".to_string(),
