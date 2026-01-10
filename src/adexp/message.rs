@@ -308,34 +308,36 @@ impl AdexpMessage {
     }
 }
 
-impl Section {
-    /// Sérialise une section ADEXP en chaîne de caractères.
-    /// 
-    /// Utilisé pour sérialiser les sections dans les blocs BEGIN/END.
-    /// 
-    /// # Returns
-    /// * `String` - Section sérialisée
-    pub fn serialize(&self) -> String {
-        let mut result = String::new();
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::adexp::parser::AdexpParser;
+    use crate::adexp::types::MessageType;
+
+    #[test]
+    fn test_adexp_message_serialize() {
+        let mut message = AdexpMessage::new(String::new());
+        message.message_type = MessageType::FlightPlan;
         
-        // Trier les champs par nom pour un ordre cohérent
-        let mut fields: Vec<(&String, &Vec<String>)> = self.fields.iter().collect();
-        fields.sort_by(|a, b| a.0.cmp(b.0));
-        
-        // Écrire les champs
-        for (field_name, values) in fields {
-            for value in values {
-                result.push_str("-");
-                result.push_str(field_name);
-                if !value.is_empty() {
-                    result.push(' ');
-                    result.push_str(value.trim());
-                }
-                result.push('\n');
-            }
-        }
-        
-        result.trim_end().to_string()
+        let mut main_section = Section::new(String::new());
+        main_section.add_field("TITLE".to_string(), "FPL".to_string());
+        main_section.add_field("ARCID".to_string(), "ABC123".to_string());
+        message.sections.insert(String::new(), main_section);
+
+        let serialized = message.serialize();
+        assert!(serialized.contains("-ADEXP"));
+        assert!(serialized.contains("-TITLE"));
+        assert!(serialized.contains("FPL"));
+    }
+
+    #[test]
+    fn test_adexp_message_serialize_round_trip() {
+        let original = "-ADEXP\n-TITLE FPL\n-ARCID ABC123\n-ADEP LFPG\n-ADES LFPB";
+        let message = AdexpParser::parse_message(original).unwrap();
+        let serialized = message.serialize();
+        let reparsed = AdexpParser::parse_message(&serialized).unwrap();
+
+        assert_eq!(message.message_type, reparsed.message_type);
     }
 }
 
