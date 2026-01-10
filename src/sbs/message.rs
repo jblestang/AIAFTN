@@ -112,5 +112,154 @@ impl SbsMessage {
     pub fn validate(&self) -> Result<(), SbsError> {
         crate::sbs::validation::validate_message(self)
     }
+    
+    /// Sérialise le message SBS en chaîne de caractères.
+    /// 
+    /// Reconstruit le message dans le format SBS (BaseStation) standard sans espaces/tabulations supplémentaires.
+    /// Format: `MSG,type,transmission_type,session_id,aircraft_id,hex_ident,flight_id,date_gen,time_gen,date_log,time_log,callsign,altitude,speed,track,lat,lon,vr,squawk,alert,emergency,spi,is_on_ground`
+    /// 
+    /// # Returns
+    /// * `String` - Message SBS sérialisé
+    /// 
+    /// # Exemples
+    /// ```
+    /// use aftn::{SbsParser, SbsMessage};
+    /// let input = "MSG,3,145,29315,4CA2E6,27215,2015/02/05,14:53:22.734,2015/02/05,14:53:22.734,,37025,1035.0,295.6,51.4703,-0.4543,,,,,0";
+    /// let message = SbsParser::parse_message(input)?;
+    /// let serialized = message.serialize();
+    /// ```
+    pub fn serialize(&self) -> String {
+        let mut result = String::new();
+        
+        // MSG,type
+        result.push_str("MSG,");
+        result.push_str(&self.message_type.msg_number().to_string());
+        result.push(',');
+        
+        // transmission_type
+        result.push_str(&self.transmission_type.to_string());
+        result.push(',');
+        
+        // session_id
+        if let Some(ref val) = self.session_id {
+            result.push_str(val);
+        }
+        result.push(',');
+        
+        // aircraft_id
+        if let Some(ref val) = self.aircraft_id {
+            result.push_str(val);
+        }
+        result.push(',');
+        
+        // hex_ident
+        if let Some(ref val) = self.hex_ident {
+            result.push_str(val);
+        }
+        result.push(',');
+        
+        // flight_id
+        if let Some(ref val) = self.flight_id {
+            result.push_str(val);
+        }
+        result.push(',');
+        
+        // date_message_generated
+        if let Some(ref val) = self.date_message_generated {
+            result.push_str(val);
+        }
+        result.push(',');
+        
+        // time_message_generated
+        if let Some(ref val) = self.time_message_generated {
+            result.push_str(val);
+        }
+        result.push(',');
+        
+        // date_message_logged
+        if let Some(ref val) = self.date_message_logged {
+            result.push_str(val);
+        }
+        result.push(',');
+        
+        // time_message_logged
+        if let Some(ref val) = self.time_message_logged {
+            result.push_str(val);
+        }
+        result.push(',');
+        
+        // callsign
+        if let Some(ref val) = self.callsign {
+            result.push_str(val);
+        }
+        result.push(',');
+        
+        // altitude
+        if let Some(ref val) = self.altitude {
+            result.push_str(&val.to_string());
+        }
+        result.push(',');
+        
+        // ground_speed
+        if let Some(ref val) = self.ground_speed {
+            result.push_str(&val.to_string());
+        }
+        result.push(',');
+        
+        // track
+        if let Some(ref val) = self.track {
+            result.push_str(&val.to_string());
+        }
+        result.push(',');
+        
+        // latitude
+        if let Some(ref val) = self.latitude {
+            result.push_str(&val.to_string());
+        }
+        result.push(',');
+        
+        // longitude
+        if let Some(ref val) = self.longitude {
+            result.push_str(&val.to_string());
+        }
+        result.push(',');
+        
+        // vertical_rate
+        if let Some(ref val) = self.vertical_rate {
+            result.push_str(&val.to_string());
+        }
+        result.push(',');
+        
+        // squawk
+        if let Some(ref val) = self.squawk {
+            result.push_str(val);
+        }
+        result.push(',');
+        
+        // alert
+        if let Some(ref val) = self.alert {
+            result.push_str(if *val { "1" } else { "0" });
+        }
+        result.push(',');
+        
+        // emergency
+        if let Some(ref val) = self.emergency {
+            result.push_str(if *val { "1" } else { "0" });
+        }
+        result.push(',');
+        
+        // spi
+        if let Some(ref val) = self.spi {
+            result.push_str(if *val { "1" } else { "0" });
+        }
+        result.push(',');
+        
+        // is_on_ground
+        if let Some(ref val) = self.is_on_ground {
+            result.push_str(if *val { "1" } else { "0" });
+        }
+        
+        result
+    }
 }
 

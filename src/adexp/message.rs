@@ -215,6 +215,128 @@ impl AdexpMessage {
         }
         Ok(())
     }
+    
+    /// Sérialise le message ADEXP en chaîne de caractères.
+    /// 
+    /// Reconstruit le message dans le format ADEXP standard sans espaces/tabulations supplémentaires.
+    /// Format: `-ADEXP\n-TITLE [TITLE]\n-FIELD value\n...\n-BEGIN SECTION\n...\n-END`
+    /// 
+    /// # Returns
+    /// * `String` - Message ADEXP sérialisé
+    /// 
+    /// # Exemples
+    /// ```
+    /// use aftn::{AdexpParser, AdexpMessage};
+    /// let input = "-ADEXP\n-TITLE FPL\n-ARCID ABC123\n-ADEP LFPG\n-ADES LFPB";
+    /// let message = AdexpParser::parse_message(input)?;
+    /// let serialized = message.serialize();
+    /// ```
+    pub fn serialize(&self) -> String {
+        let mut result = String::new();
+        
+        // Marqueur ADEXP
+        result.push_str("-ADEXP\n");
+        
+        // Section principale (section vide "")
+        if let Some(main_section) = self.sections.get("") {
+            // Trier les champs pour un ordre cohérent (TITLE en premier si présent)
+            let mut fields: Vec<(&String, &Vec<String>)> = main_section.fields.iter().collect();
+            
+            // Trier: TITLE en premier, puis les autres par ordre alphabétique
+            fields.sort_by(|a, b| {
+                if a.0 == "TITLE" {
+                    std::cmp::Ordering::Less
+                } else if b.0 == "TITLE" {
+                    std::cmp::Ordering::Greater
+                } else {
+                    a.0.cmp(b.0)
+                }
+            });
+            
+            // Écrire les champs de la section principale
+            for (field_name, values) in fields {
+                for value in values {
+                    result.push_str("-");
+                    result.push_str(field_name);
+                    if !value.is_empty() {
+                        result.push(' ');
+                        result.push_str(value.trim());
+                    }
+                    result.push('\n');
+                }
+            }
+        }
+        
+        // Sections avec BEGIN/END (toutes les sections sauf la principale)
+        let mut array_sections: Vec<(&String, &Section)> = self.sections.iter()
+            .filter(|(name, _)| !name.is_empty())
+            .collect();
+        
+        // Trier les sections par nom pour un ordre cohérent
+        array_sections.sort_by(|a, b| a.0.cmp(b.0));
+        
+        for (section_name, section) in array_sections {
+            // Marqueur BEGIN
+            result.push_str("-BEGIN ");
+            result.push_str(section_name);
+            result.push('\n');
+            
+            // Trier les champs par nom
+            let mut fields: Vec<(&String, &Vec<String>)> = section.fields.iter().collect();
+            fields.sort_by(|a, b| a.0.cmp(b.0));
+            
+            // Écrire les champs de la section
+            for (field_name, values) in fields {
+                for value in values {
+                    result.push_str("-");
+                    result.push_str(field_name);
+                    if !value.is_empty() {
+                        result.push(' ');
+                        result.push_str(value.trim());
+                    }
+                    result.push('\n');
+                }
+            }
+            
+            // Marqueur END avec nom de section
+            result.push_str("-END ");
+            result.push_str(section_name);
+            result.push('\n');
+        }
+        
+        result.trim_end().to_string()
+    }
+}
+
+impl Section {
+    /// Sérialise une section ADEXP en chaîne de caractères.
+    /// 
+    /// Utilisé pour sérialiser les sections dans les blocs BEGIN/END.
+    /// 
+    /// # Returns
+    /// * `String` - Section sérialisée
+    pub fn serialize(&self) -> String {
+        let mut result = String::new();
+        
+        // Trier les champs par nom pour un ordre cohérent
+        let mut fields: Vec<(&String, &Vec<String>)> = self.fields.iter().collect();
+        fields.sort_by(|a, b| a.0.cmp(b.0));
+        
+        // Écrire les champs
+        for (field_name, values) in fields {
+            for value in values {
+                result.push_str("-");
+                result.push_str(field_name);
+                if !value.is_empty() {
+                    result.push(' ');
+                    result.push_str(value.trim());
+                }
+                result.push('\n');
+            }
+        }
+        
+        result.trim_end().to_string()
+    }
 }
 
 impl Section {

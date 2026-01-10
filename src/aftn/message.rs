@@ -113,5 +113,61 @@ impl AftnMessage {
         
         Ok(())
     }
+    
+    /// Sérialise le message AFTN en chaîne de caractères.
+    /// 
+    /// Reconstruit le message dans le format AFTN standard sans espaces/tabulations supplémentaires.
+    /// Format: `[PRIORITY] [ORIGIN] [DEST1] [DEST2] ... [DDHHMM] [BODY] [/SEQ NUMBER]`
+    /// 
+    /// # Returns
+    /// * `String` - Message AFTN sérialisé
+    /// 
+    /// # Exemples
+    /// ```
+    /// use aftn::{AftnParser, AftnMessage};
+    /// let input = "GG LFPGYYYX LFPOYYYX 151230 NOTAM A1234/24";
+    /// let message = AftnParser::parse_message(input)?;
+    /// let serialized = message.serialize();
+    /// assert_eq!(serialized, "GG LFPGYYYX LFPOYYYX 151230 NOTAM A1234/24");
+    /// ```
+    pub fn serialize(&self) -> String {
+        let mut result = String::new();
+        
+        // Priorité
+        result.push_str(&self.priority);
+        result.push(' ');
+        
+        // Adresse d'origine
+        result.push_str(&self.addresses.origin);
+        result.push(' ');
+        
+        // Adresses de destination (séparées par des espaces)
+        for (idx, dest) in self.addresses.destinations.iter().enumerate() {
+            if idx > 0 {
+                result.push(' ');
+            }
+            result.push_str(dest);
+        }
+        result.push(' ');
+        
+        // Date et heure (format: DDHHMM)
+        result.push_str(&format!("{:02}{:02}{:02}", 
+            self.transmission_time.day,
+            self.transmission_time.hour,
+            self.transmission_time.minute
+        ));
+        result.push(' ');
+        
+        // Corps du message
+        result.push_str(&self.body.trim());
+        
+        // Numéro de séquence (optionnel)
+        if let Some(seq) = &self.sequence_number {
+            result.push_str(" /SEQ ");
+            result.push_str(seq);
+        }
+        
+        result
+    }
 }
 
